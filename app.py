@@ -4,6 +4,7 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
+import hashlib
 from flask import Flask, render_template, request, abort, url_for
 from flask_socketio import SocketIO
 import db
@@ -42,18 +43,21 @@ def login():
 def login_user():
     if not request.is_json:
         abort(404)
-
     username = request.json.get("username")
     password = request.json.get("password")
+    print(f"username: {username} password: {password}")
 
     user =  db.get_user(username)
     if user is None:
         return "Error: User does not exist!"
 
-    if user.password != password:
-        return "Error: Password does not match!"
-
-    return url_for('home', username=request.json.get("username"))
+    hashed_password = hashlib.sha256((password + user.salt).encode()).hexdigest()
+    print(f"password: {user.password} salt: {user.salt} hashed_password: {hashed_password} user.password: {user.password}")
+    if hashed_password == user.password:
+        print(f"User {username} logged in")
+        return url_for('home', username=request.json.get("username"))
+    else:
+        return jsonify({"success": False})
 
 # handles a get request to the signup page
 @app.route("/signup")
@@ -67,11 +71,12 @@ def signup_user():
         abort(404)
     username = request.json.get("username")
     password = request.json.get("password")
+    salt = request.json.get("salt")
 
     if db.get_user(username) is None:
         if "?" in username:
             return "Error: Username cannot contain question marks!"
-        db.insert_user(username, password)
+        db.insert_user(username, password, salt)
         return url_for('home', username=username)
     return "Error: User already exists!"
 
