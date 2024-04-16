@@ -307,13 +307,6 @@
                 console.error("Error updating incoming requests:", error);
             });
     }
-    document.getElementById("incoming-requests").addEventListener("click", function(event) {
-        if (event.target.classList.contains("accept-button")) {
-            acceptFriendRequest(event.target.parentElement.textContent);
-        } else if (event.target.classList.contains("reject-button")) {
-            rejectFriendRequest(event.target.parentElement.textContent);
-        }
-    });
     function updateOutgoingRequests() {
         axios.get(`/get_outgoing_requests/${username}`)
             .then(response => {

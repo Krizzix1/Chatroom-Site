@@ -111,8 +111,6 @@ def send_friend_request():
 def approve_friend_request():
     data = request.get_json()
     db.approve_friend_request(data['username'], data['friend_username'])
-    socketio.emit('friendAdded', {'username': data['username']}, room=data['friend_username'])
-    socketio.emit('friendAdded', {'username': data['friend_username']}, room=data['username'])
     return "Friend request approved"
 @app.route('/remove_friend_request', methods=['POST'])
 def remove_friend_request():
