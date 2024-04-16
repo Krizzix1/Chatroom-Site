@@ -98,6 +98,8 @@ def approve_friend_request(username: str, friend_username: str):
         
 
 def send_friend_request(username: str, friend_username: str):
+    if username == friend_username:
+        return
     with Session(engine) as session:
         user = session.query(User).filter_by(username=friend_username).first()
         requesting_user = session.query(User).filter_by(username=username).first()
