@@ -69,7 +69,7 @@ def remove_friend_request(username: str, friend_username: str):
             user.incoming = updated_requests if updated_requests else None
         if username in friend_user.outgoing.split('?'):
             updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
-            friend_user.outgoing = updated_requests if updated_requests else None
+            friend_user.outgoing = updated_requests if updated_requests else ''
         session.commit()
 
 def approve_friend_request(username: str, friend_username: str):
@@ -89,7 +89,7 @@ def approve_friend_request(username: str, friend_username: str):
 
         if username in (friend_user.outgoing or '').split('?'):
             updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
-            friend_user.outgoing = updated_requests if updated_requests else None
+            friend_user.outgoing = updated_requests if updated_requests else ''
             friend_user.friends = friend_user.friends + '?' + username if friend_user.friends else username
         else:
             return {'error': 'No outgoing friend request to ' + friend_username}
