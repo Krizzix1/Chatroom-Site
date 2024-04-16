@@ -1,0 +1,13 @@
+<!-- 
+Index page, the "default" page when you visit "http://localhost/" 
+ without any URL parameters at the end
+ -->
+{% extends 'base.jinja' %}
+
+
+{% block content %} 
+    <h1>Hello! Welcome to the site!</h1>
+    <p><a href={{ url_for('signup') }}> Sign Up</a></p>
+    <p><a href={{ url_for('login') }}> Login</a></p>
+    
+{% endblock %}

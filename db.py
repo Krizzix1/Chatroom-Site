@@ -1,0 +1,109 @@
+'''
+db
+database file, containing all the logic to interface with the sql database
+'''
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from models import *
+
+from pathlib import Path
+
+# creates the database directory
+Path("database") \
+    .mkdir(exist_ok=True)
+
+# "database/main.db" specifies the database file
+# change it if you wish
+# turn echo = True to display the sql output
+engine = create_engine("sqlite:///database/main.db", echo=False)
+
+# initializes the database
+Base.metadata.create_all(engine)
+
+# inserts a user to the database
+def insert_user(username: str, password: str, friends: str = "", incoming: str = "", outgoing: str = ""):
+    with Session(engine) as session:
+        user = User(username=username, password=password, friends=friends, incoming=incoming, outgoing=outgoing)
+        session.add(user)
+        session.commit()
+
+# gets a user from the database
+def get_user(username: str):
+    with Session(engine) as session:
+        print(f"{username}")  # Debug print
+        return session.get(User, username)
+
+def get_friend_list(username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        friend_list = user.friends.split('?')
+        print(f"Friend list for {username}: {friend_list}")  # Debug print
+        return friend_list
+
+def get_outgoing_requests(username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        outgoing_requests = user.outgoing.split('?') if user.outgoing else []
+        return outgoing_requests
+
+def get_incoming_requests(username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        incoming_requests = user.incoming.split('?') if user.incoming else []
+        return incoming_requests
+
+def add_friend(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        if friend_username not in user.friends.split('?'):
+            user.friends = (user.friends + '?' + friend_username) if user.friends else friend_username
+        session.commit()
+
+def remove_friend_request(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        friend_user = session.query(User).filter_by(username=friend_username).first()
+        if friend_username in user.incoming.split('?'):
+            updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
+            user.incoming = updated_requests if updated_requests else None
+        if username in friend_user.outgoing.split('?'):
+            updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
+            friend_user.outgoing = updated_requests if updated_requests else None
+        session.commit()
+
+def approve_friend_request(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        friend_user = session.query(User).filter_by(username=friend_username).first()
+        if friend_username in user.incoming.split('?'):
+            updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
+            user.incoming = updated_requests if updated_requests else None
+            user.friends = user.friends + '?' + friend_username if user.friends else friend_username
+        if username in friend_user.outgoing.split('?'):
+            updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
+            friend_user.outgoing = updated_requests if updated_requests else None
+            friend_user.friends = friend_user.friends + '?' + username if friend_user.friends else username
+        session.commit()
+        return {'username': username, 'friend_username': friend_username}
+        
+
+def send_friend_request(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=friend_username).first()
+        requesting_user = session.query(User).filter_by(username=username).first()
+        if user is not None:
+            if requesting_user.friends and friend_username in requesting_user.friends.split('?'):
+                print(f"{friend_username} is already your friend.")
+                return
+            if user.incoming and username not in user.incoming.split('?'):
+                user.incoming += '?' + username
+            elif not user.incoming:
+                user.incoming = username
+            if requesting_user.outgoing and friend_username not in requesting_user.outgoing.split('?'):
+                requesting_user.outgoing += '?' + friend_username
+            elif not requesting_user.outgoing:
+                requesting_user.outgoing = friend_username
+            session.commit()
+        else:
+            print(f"No user found with username {friend_username}")

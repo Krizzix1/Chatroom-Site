@@ -1,0 +1,344 @@
+<!-- 
+    Here you'll find the main exhibit: the chat application code. Feel free to look around!
+-->
+{% extends 'base.jinja' %}
+
+
+{% block content %} 
+   <style>
+    nav {
+        border-bottom: 1px solid black;
+        overflow: auto
+    }
+
+    #message_box {
+        border: 1px solid black; 
+        height: 400px; 
+        width: 800px; 
+        overflow: auto;
+        padding: 2px;
+    }
+
+    .text  {
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+    
+    #friend_list_section {
+        border: 1px solid black; 
+        height: 400px; 
+        width: 800px; 
+        overflow: auto;
+        padding: 2px;
+        position: absolute;
+        right: 8px;
+        top: 150px;
+
+    }
+
+</style>
+
+<!--Navbar, you'll see the username here-->
+<nav style="border-bottom: 1px solid black;">
+    <ol style="float: right">
+        <li style="display:inline-block">Username:  {{ username }}</li>
+    </ol>
+</nav>
+
+<h1>Messaging App </h1>
+
+<main>
+    <!-- The messages are displayed here -->
+    <section id="message_box"></section>
+
+    <!-- These part ideally should be a form element, 
+    but I wrote this code a year ago and I don't want to break anything...-->
+    <section id="chat_box">
+        <p class="text">Chat with: </p>
+        <input id="receiver" placeholder="username">
+        <!-- MDN says its bad practice to use the onclick attribute,
+        but we're using it anyways coz its easy :)-->
+        <button onclick="join_room()">Chat</button>
+    </section>
+
+    <!-- The (message) input box is set to display: none initially, 
+    this means the input box is "invisible" initially-->
+    <section id="input_box" style="display: none" >
+        <p class="text">Message: </p>
+        <input id="message" placeholder="message">
+        <button onclick="send()">Send</button>
+        <button onclick="leave()">Leave Room</button>
+    </section>
+</main>
+<main style="display: flex; justify-content: space-between;">
+    <!-- Existing chat box and input box sections -->
+    ...
+    <!-- New friend list section -->
+    <section id="friend_list_section" style="border: 1px solid black; height: 400px; width: 800px; overflow: auto; padding: 2px; display: flex;">
+        <div style="width: 33%;">
+            <h2 style="text-align: center;">Friend List</h2>
+            <ul id="friends-list"></ul>
+        </div>
+        <div style="width: 33%;">
+            <h2 style="text-align: center;">Incoming Requests</h2>
+            <ul id="incoming-requests"></ul>
+        </div>
+        <div style="width: 33%;">
+            <h2 style="text-align: center;">Outgoing Requests</h2>
+            <ul id="outgoing-requests"></ul>
+        </div>
+    </section>
+    <section id="friend_request_section" style="border: 1px solid black; height: 50px; width: 800px; overflow: auto; padding: 2px;">
+    <p class="text">Send Friend Request to: </p>
+    <input id="friend_username" placeholder="username">
+    <button onclick="sendFriendRequest()">Send</button>
+</section>
+</main>
+<script src="/static/js/libs/socket.io.min.js"></script>
+
+
+<script>
+    let room_id = 0;
+
+    // when the user presses the "Enter" key inside of the "message box", 
+    // the message is sent to the server
+    $("#message").on("keyup", (e) => {
+        if (e.key == "Enter") {
+            send();
+        }
+    })
+
+    // when the user presses the enter key inside of the "receiver box"
+    // the user joins a (socket) room
+     $("#receiver").on("keyup", (e) => {
+        if (e.key == "Enter") {
+            join_room();
+        }
+    })
+
+
+    $(document).ready(() => {
+        updateFriendList();
+        updateIncomingRequests();
+        updateOutgoingRequests();
+        setInterval(updateFriendList, 2000);
+        setInterval(updateIncomingRequests, 2000);
+        setInterval(updateOutgoingRequests, 2000);
+        // room_id is undefined if the user hasn't joined a room
+        // we early return in this case
+        if (Cookies.get("room_id") == undefined) {
+            return;
+        }
+
+        // the user has already joined an existing room
+        // we'll display the message box, instead of the "Chat with: " box
+
+        $("#chat_box").hide();
+        $("#input_box").show();
+        room_id = parseInt(Cookies.get("room_id"));
+    })
+    
+    // Here's the Socket IO part of the code
+    // things get a bit complicated here so brace yourselves :P
+    let username = "{{ username }}";
+
+    Cookies.set('username', username);
+
+    // initializes the socket
+    const socket = io();
+
+    // an incoming message arrives, we'll add the message to the message box
+    socket.on("incoming", (msg, color="black") => {
+        add_message(msg, color);
+    })
+    // we'll send the message to the server by emitting a "send" event
+    socket.on('friendListUpdate', (friendList) => {
+        // Clear the current friend list
+        $('#friendList').empty();
+
+        // Add each friend to the friend list
+        friendList.forEach((friend) => {
+            // Create a new list item for the friend
+            let friendListItem = $(`<li>${friend}</li>`);
+            // Add a click event handler to the list item
+            friendListItem.on('click', () => {
+                // Set the receiver input to the friend's username
+                $('#receiver').val(friend);
+                // Join the chatroom with the friend
+                join_room();
+            });
+            // Append the list item to the friend list
+            $('#friends-list').append(friendListItem);
+        });
+    });
+    socket.on('friendAdded', function(data){
+        if (data.username === "{{ username }}" || Cookies.get('username') === data.username) {
+            updateFriendList();
+            updateOutgoingRequests();
+        }
+    });
+
+    function send() {
+        let message = $("#message").val();
+        $("#message").val("");
+        socket.emit("send", username, message, room_id);  
+    } 
+
+    // we emit a join room event to the server to join a room
+    function join_room(receiver) {
+        let sender = username;
+        socket.emit("join", sender, receiver, (res) => {
+            if (typeof res != "number") {
+                alert(res);
+                return;
+            }
+
+            room_id = res;
+            Cookies.set("room_id", room_id);
+
+            $("#chat_box").hide();
+            $("#input_box").show();
+            let receiver = $("#receiver").val();
+        });
+     
+    }
+
+    // function when the user clicks on "Leave Room"
+    // emits a "leave" event, telling the server that we want to leave the room
+    function leave() {
+        Cookies.remove("room_id");
+        socket.emit("leave", username, room_id);
+        $("#input_box").hide();
+        $("#chat_box").show();
+    }
+
+    // function to add a message to the message box
+    // called when an incoming message has reached a client
+    function add_message(message, color) {
+        let box = $("#message_box");
+        let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
+        box.append(child);
+    }
+    function addFriend() {
+        let friendUsername = $("#friend_username").val();
+        axios.post('/add_friend', {
+            username: "{{ username }}",
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            // Emit a 'friendAdded' event to the server
+            socket.emit('friendAdded', { username: "{{ username }}", friend_username: friendUsername });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    function updateFriendList() {
+        console.log("updateFriendList called");  // Debug print
+        const username = Cookies.get("username");
+        axios.get(`/get_friends/${username}`)
+            .then(response => {
+                const friends = response.data;
+                const friendsListElement = $("#friends-list");
+                friendsListElement.empty();
+                friends.forEach(friend => {
+                    const li = $("<li>");
+                    li.textContent = friend;
+                    const link = $("<a>").text(friend);
+                    link.click(() => join_room(friend));
+                    li.append(link);
+                    friendsListElement.append(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching friends list:", error);
+            });
+    }
+    function acceptFriendRequest(friendUsername) {
+        axios.post('/approve_friend_request', {
+            username: username,
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            updateFriendList();
+            updateIncomingRequests();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+
+    function rejectFriendRequest(friendUsername) {
+        axios.post('/remove_friend_request', {
+            username: username,
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            updateIncomingRequests();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    function updateIncomingRequests() {
+        axios.get(`/get_incoming_requests/${username}`)
+            .then(response => {
+                const incomingRequests = response.data;
+                const incomingRequestsElement = document.getElementById("incoming-requests");
+                incomingRequestsElement.innerHTML = "";
+                incomingRequests.forEach(request => {
+                    const li = document.createElement("li");
+                    li.textContent = request;
+                    const acceptButton = document.createElement("button");
+                    acceptButton.textContent = "Accept";
+                    acceptButton.onclick = () => acceptFriendRequest(request);
+                    const rejectButton = document.createElement("button");
+                    rejectButton.textContent = "Reject";
+                    rejectButton.onclick = () => rejectFriendRequest(request);
+                    li.appendChild(acceptButton);
+                    li.appendChild(rejectButton);
+                    incomingRequestsElement.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error updating incoming requests:", error);
+            });
+    }
+
+    function updateOutgoingRequests() {
+        axios.get(`/get_outgoing_requests/${username}`)
+            .then(response => {
+                const outgoingRequests = response.data;
+                const outgoingRequestsElement = document.getElementById("outgoing-requests");
+                outgoingRequestsElement.innerHTML = "";
+                outgoingRequests.forEach(request => {
+                    const li = document.createElement("li");
+                    li.textContent = request;
+                    outgoingRequestsElement.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error updating outgoing requests:", error);
+            });
+    }
+
+    function sendFriendRequest() {
+        let friendUsername = $("#friend_username").val();
+        axios.post('/send_friend_request', {
+            username: "{{ username }}",
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            updateOutgoingRequests();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!-- 
+All pages inherit from this page, this is the "base" page. 
+Think of Java inheritance, but for web pages, eww... 
+
+Contains script tags that tells the browser where to locate the JQuery scripts.
+This code is pretty gross since everything is imported globally, if you're familiar with Python
+this is equivalent to a bunch of glob imports -> import * from jquery. 
+
+Yeah I know it's pretty ugly...
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HTML :)</title> 
+        <script src="/static/js/libs/axios.min.js"></script>
+        <script src="/static/js/libs/jquery.min.js"></script>
+        <script src="/static/js/libs/js.cookie.min.js"></script>
+    </head>
+    <body>
+        <!-- The content from any other page goes here -->
+        {% block content %} {% endblock %}
+    </body>
+</html>
