@@ -76,14 +76,24 @@ def approve_friend_request(username: str, friend_username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()
         friend_user = session.query(User).filter_by(username=friend_username).first()
-        if friend_username in user.incoming.split('?'):
+
+        if not user or not friend_user:
+            return {'error': 'One or both users not found'}
+
+        if friend_username in (user.incoming or '').split('?'):
             updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
             user.incoming = updated_requests if updated_requests else None
             user.friends = user.friends + '?' + friend_username if user.friends else friend_username
-        if username in friend_user.outgoing.split('?'):
+        else:
+            return {'error': 'No incoming friend request from ' + friend_username}
+
+        if username in (friend_user.outgoing or '').split('?'):
             updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
             friend_user.outgoing = updated_requests if updated_requests else None
             friend_user.friends = friend_user.friends + '?' + username if friend_user.friends else username
+        else:
+            return {'error': 'No outgoing friend request to ' + friend_username}
+
         session.commit()
         return {'username': username, 'friend_username': friend_username}
         

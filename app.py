@@ -110,6 +110,7 @@ def send_friend_request():
 @app.route('/approve_friend_request', methods=['POST'])
 def approve_friend_request():
     data = request.get_json()
+    print(f'data: {data}')
     db.approve_friend_request(data['username'], data['friend_username'])
     return "Friend request approved"
 @app.route('/remove_friend_request', methods=['POST'])
