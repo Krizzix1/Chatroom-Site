@@ -66,8 +66,7 @@ def remove_friend_request(username: str, friend_username: str):
         friend_user = session.query(User).filter_by(username=friend_username).first()
         if friend_username in user.incoming.split('?'):
             updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
-            user.incoming = updated_requests if updated_requests else None
-        if username in friend_user.outgoing.split('?'):
+            user.incoming = updated_requests if updated_requests else ''
             updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
             friend_user.outgoing = updated_requests if updated_requests else ''
         session.commit()
@@ -82,7 +81,7 @@ def approve_friend_request(username: str, friend_username: str):
 
         if friend_username in (user.incoming or '').split('?'):
             updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
-            user.incoming = updated_requests if updated_requests else None
+            user.incoming = updated_requests if updated_requests else ''
             user.friends = user.friends + '?' + friend_username if user.friends else friend_username
         else:
             return {'error': 'No incoming friend request from ' + friend_username}
