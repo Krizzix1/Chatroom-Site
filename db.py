@@ -117,3 +117,11 @@ def send_friend_request(username: str, friend_username: str):
             session.commit()
         else:
             print(f"No user found with username {friend_username}")
+
+def add_chat(username: str, friend_username: str):
+    with Session as session:
+        userA = session.query(User).filter_by(username=friend_username).first()
+        userB = session.query(User).filter_by(username=username).first()
+        current_chat = chat_history(userA, userB)
+        session.add(current_chat)
+        session.commit()

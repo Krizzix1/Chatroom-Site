@@ -58,6 +58,13 @@ def join(sender_name, receiver_name):
     if sender is None:
         return "Unknown sender!"
 
+    #sender_room_id = room.get_room_id(sender_name)
+
+    #if sender_room_id is not None:
+        #emit("incoming", (f"{sender_name} has left the room.", "red"), to=room_id)
+        #leave_room(room_id)
+        #room.leave_room(sender_name)
+
     room_id = room.get_room_id(receiver_name)
 
     # if the user is already inside of a room 

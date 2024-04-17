@@ -149,6 +149,7 @@
 
     // an incoming message arrives, we'll add the message to the message box
     socket.on("incoming", (msg, color="black") => {
+        console.log("incoming called");
         add_message(msg, color);
     })
     // we'll send the message to the server by emitting a "send" event
@@ -179,6 +180,7 @@
     });
 
     function send() {
+        console.log("send called");
         let message = $("#message").val();
         $("#message").val("");
         socket.emit("send", username, message, room_id);  
@@ -186,6 +188,10 @@
 
     // we emit a join room event to the server to join a room
     function join_room(receiver) {
+        console.log("join_room called");
+        if (Cookies.get("room_id") != undefined){
+            leave()
+        }
         let sender = username;
         socket.emit("join", sender, receiver, (res) => {
             if (typeof res != "number") {
@@ -206,10 +212,13 @@
     // function when the user clicks on "Leave Room"
     // emits a "leave" event, telling the server that we want to leave the room
     function leave() {
+        console.log("LEAVE called");
         Cookies.remove("room_id");
         socket.emit("leave", username, room_id);
         $("#input_box").hide();
         $("#chat_box").show();
+        let box = $("#message_box");
+        box.empty();
     }
 
     // function to add a message to the message box

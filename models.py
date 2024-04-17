@@ -34,6 +34,21 @@ class User(Base):
     incoming: Mapped[str] = mapped_column(String, default="")
     outgoing: Mapped[str] = mapped_column(String, default="")
 
+#model to store chatroom information
+class chat_history(Base):
+    __tablename__ = "ChatRooms"
+    userA: Mapped[str] = mapped_column(String, primary_key=True)
+    userB: Mapped[str] = mapped_column(String)
+    keyA: Mapped[str] = mapped_column(String,default="")
+    keyB: Mapped[str] = mapped_column(String,default="")
+    History: Mapped[str] = mapped_column(String, default="")
+
+    def __init__(self, userA, userB):
+        self.userA = userA
+        self.userB = userB
+
+
+
 # stateful counter used to generate the room id
 class Counter():
     def __init__(self):
