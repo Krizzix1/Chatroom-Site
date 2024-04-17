@@ -45,6 +45,16 @@ def disconnect():
 def send(username, message, room_id):
     emit("incoming", (f"{username}: {message}"), to=room_id)
     
+
+@socketio.on("update_history")
+def update_history(userA, userB, message):
+    db.update_history(userA,userB,message)
+
+
+
+
+
+
 # join room event handler
 # sent when the user joins a room
 @socketio.on("join")
@@ -58,12 +68,13 @@ def join(sender_name, receiver_name):
     if sender is None:
         return "Unknown sender!"
 
-    #sender_room_id = room.get_room_id(sender_name)
+    #make chat_history room between sender and reciever
+    history = db.get_history(sender_name, receiver_name)
+    if not history:
+        db.add_chatroom(sender_name, receiver_name)
+    else:
+        emit("show_history",(history.History,history.userA, history.userB))
 
-    #if sender_room_id is not None:
-        #emit("incoming", (f"{sender_name} has left the room.", "red"), to=room_id)
-        #leave_room(room_id)
-        #room.leave_room(sender_name)
 
     room_id = room.get_room_id(receiver_name)
 

@@ -53,6 +53,7 @@
             // redirects to the URL (ie. res.data),
             // we use _self here since we all hate that moment
             // when the browser opens a new tab
+            Cookies.remove("room_id");
             window.open(res.data, "_self")
         }
     </script>

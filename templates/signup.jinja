@@ -27,6 +27,7 @@ Sign up page, pretty much the same as login.
         // this function is identical to login(), see login.jinja
         async function signup() {
             console.log("test");
+            Cookies.remove("room_id");
             let loginURL = "{{ url_for('signup_user') }}";
             let username = $("#username").val();
             let password = $("#password").val();

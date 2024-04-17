@@ -152,6 +152,27 @@
         console.log("incoming called");
         add_message(msg, color);
     })
+
+    socket.on("show_history", (msg, userA, userB, color="black") => {
+        console.log("showhistory called");
+        let box = $("#message_box");
+        box.empty();
+        newmsg = msg.split("ⴰ𐄂Ⱞ𐎀")
+        for (var i = 0; i<newmsg.length;i++){
+            console.log(newmsg[i][newmsg[i].length-1]);
+            console.log(newmsg[i][newmsg[i].length-1] == "a");
+            if(newmsg[i][newmsg[i].length-1] == "a"){
+                add_message(userA + ": "+newmsg[i].slice(0,-1),color);
+            }
+            else{
+                add_message(userB + ": " + newmsg[i].slice(0,-1),color);
+            }
+            
+        }
+
+
+        
+    })
     // we'll send the message to the server by emitting a "send" event
     socket.on('friendListUpdate', (friendList) => {
         // Clear the current friend list
@@ -183,11 +204,14 @@
         console.log("send called");
         let message = $("#message").val();
         $("#message").val("");
+        socket.emit("update_history",username,$("#receiver").val(),message )
+
         socket.emit("send", username, message, room_id);  
     } 
 
     // we emit a join room event to the server to join a room
     function join_room(receiver) {
+        $('#receiver').val(receiver);
         console.log("join_room called");
         if (Cookies.get("room_id") != undefined){
             leave()

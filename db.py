@@ -30,14 +30,12 @@ def insert_user(username: str, password: str, salt: str, friends: str = "", inco
 # gets a user from the database
 def get_user(username: str):
     with Session(engine) as session:
-        print(f"{username}")  # Debug print
         return session.get(User, username)
 
 def get_friend_list(username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()
         friend_list = user.friends.split('?')
-        print(f"Friend list for {username}: {friend_list}")  # Debug print
         return friend_list
 
 def get_outgoing_requests(username: str):
@@ -118,10 +116,33 @@ def send_friend_request(username: str, friend_username: str):
         else:
             print(f"No user found with username {friend_username}")
 
-def add_chat(username: str, friend_username: str):
-    with Session as session:
-        userA = session.query(User).filter_by(username=friend_username).first()
-        userB = session.query(User).filter_by(username=username).first()
-        current_chat = chat_history(userA, userB)
-        session.add(current_chat)
+def add_chatroom(username: str, friend_username: str):
+    with Session(engine) as session:
+        current_chatroom = chat_history(userA=username, userB=friend_username)
+        session.add(current_chatroom)
         session.commit()
+
+
+#Get history room of two participants
+def get_history(userA, userB):
+    with Session(engine) as session:
+        history = session.query(chat_history).filter(chat_history.userA == userA, chat_history.userB == userB).first()
+        if history == None:
+            history = session.query(chat_history).filter(chat_history.userA == userB, chat_history.userB == userA).first()
+        return history
+    
+def update_history(userA, userB, message):
+    with Session(engine) as session:
+        delim = "ⴰ𐄂Ⱞ𐎀"
+        history = session.query(chat_history).filter(chat_history.userA == userA, chat_history.userB == userB).first()
+        identifier = "a"
+        if history == None:
+            history = session.query(chat_history).filter(chat_history.userA == userB, chat_history.userB == userA).first()
+            identifier = "b"
+
+        if history:
+            if not history.History:
+                history.History = message + identifier
+            else:
+                history.History += delim + message + identifier
+            session.commit()

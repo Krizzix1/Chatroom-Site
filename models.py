@@ -10,7 +10,7 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-from sqlalchemy import String
+from sqlalchemy import String, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import Dict
 
@@ -34,19 +34,24 @@ class User(Base):
     incoming: Mapped[str] = mapped_column(String, default="")
     outgoing: Mapped[str] = mapped_column(String, default="")
 
+
+#Counter for unique ID for chatroom history
+
+
 #model to store chatroom information
 class chat_history(Base):
     __tablename__ = "ChatRooms"
-    userA: Mapped[str] = mapped_column(String, primary_key=True)
+    id: Mapped[Integer] = mapped_column(Integer, primary_key=True, index=True)
+    userA: Mapped[str] = mapped_column(String)
     userB: Mapped[str] = mapped_column(String)
     keyA: Mapped[str] = mapped_column(String,default="")
     keyB: Mapped[str] = mapped_column(String,default="")
     History: Mapped[str] = mapped_column(String, default="")
+    
 
     def __init__(self, userA, userB):
         self.userA = userA
         self.userB = userB
-
 
 
 # stateful counter used to generate the room id
