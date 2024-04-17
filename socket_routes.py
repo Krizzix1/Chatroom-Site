@@ -43,12 +43,18 @@ def disconnect():
 # send message event handler
 @socketio.on("send")
 def send(username, message, room_id):
-    emit("incoming", (f"{username}: {message}"), to=room_id)
+    if "ⴰ𐄂Ⱞ𐎀" in message:
+        pass
+    else:
+        emit("incoming", (f"{username}: {message}"), to=room_id)
     
 
 @socketio.on("update_history")
 def update_history(userA, userB, message):
-    db.update_history(userA,userB,message)
+    if "ⴰ𐄂Ⱞ𐎀" in message:
+        pass
+    else:
+        db.update_history(userA,userB,message)
 
 
 

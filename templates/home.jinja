@@ -204,6 +204,7 @@
         console.log("send called");
         let message = $("#message").val();
         $("#message").val("");
+        
         socket.emit("update_history",username,$("#receiver").val(),message )
 
         socket.emit("send", username, message, room_id);  
