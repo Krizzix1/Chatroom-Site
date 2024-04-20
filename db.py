@@ -21,9 +21,9 @@ engine = create_engine("sqlite:///database/main.db", echo=False)
 # initializes the database
 Base.metadata.create_all(engine)
 # inserts a user to the database
-def insert_user(username: str, password: str, salt: str, friends: str = "", incoming: str = "", outgoing: str = ""):
+def insert_user(username: str, password: str, salt: str, pubKey: str, friends: str = "", incoming: str = "", outgoing: str = ""):
     with Session(engine) as session:
-        user = User(username=username, password=password, salt=salt, friends=friends, incoming=incoming, outgoing=outgoing)
+        user = User(username=username, password=password, salt=salt, pubKey=pubKey, friends=friends, incoming=incoming, outgoing=outgoing)
         session.add(user)
         session.commit()
 
@@ -131,8 +131,16 @@ def get_history(userA, userB):
             history = session.query(chat_history).filter(chat_history.userA == userB, chat_history.userB == userA).first()
         return history
     
+def get_pubKey(username):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        return user.pubKey
+
+
+    
 def update_history(userA, userB, message):
     with Session(engine) as session:
+        print("ENCRYPTED MSG   : " + message)
         delim = "ⴰ𐄂Ⱞ𐎀"
         history = session.query(chat_history).filter(chat_history.userA == userA, chat_history.userB == userB).first()
         identifier = "a"

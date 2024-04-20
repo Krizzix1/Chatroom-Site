@@ -43,18 +43,15 @@ def disconnect():
 # send message event handler
 @socketio.on("send")
 def send(username, message, room_id):
-    if "ⴰ𐄂Ⱞ𐎀" in message:
-        pass
-    else:
-        emit("incoming", (f"{username}: {message}"), to=room_id)
+    emit("incomingEncrypted", (message, username, "black"), to=room_id)
     
+
+
 
 @socketio.on("update_history")
 def update_history(userA, userB, message):
-    if "ⴰ𐄂Ⱞ𐎀" in message:
-        pass
-    else:
-        db.update_history(userA,userB,message)
+    print("UPDATING HISTORY")
+    db.update_history(userA,userB,message)
 
 
 
@@ -78,7 +75,11 @@ def join(sender_name, receiver_name):
     history = db.get_history(sender_name, receiver_name)
     if not history:
         db.add_chatroom(sender_name, receiver_name)
+        history = db.get_history(sender_name, receiver_name)
+        emit("make_key", (receiver.pubKey, history.id))
+        #sender makes symmetric key, uploads key symmetrically encrypted with his private key, uploads assymetrically encrypted with receivers pub key
     else:
+        emit("make_key", (receiver.pubKey, history.id))
         emit("show_history",(history.History,history.userA, history.userB))
 
 
@@ -109,3 +110,5 @@ def leave(username, room_id):
     emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
     leave_room(room_id)
     room.leave_room(username)
+
+

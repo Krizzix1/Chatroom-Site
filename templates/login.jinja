@@ -11,6 +11,8 @@
     <p>Password</p>
     <input id="password"  type="password"/>
     <button onclick="login()">Login</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
 
     <script>
 
@@ -24,6 +26,14 @@
                 return true;
             }
             return false;
+        }
+
+        function toASCII(password){
+            numASCII = "";
+            for (let i=0; i<password.length; i++){
+                numASCII = numASCII + password.charCodeAt(i);
+            }
+            return numASCII
         }
 
         // login function to well login...
@@ -49,11 +59,17 @@
                 alert(res.data);
                 return;
             }
+            let password = $("#password").val();
 
             // redirects to the URL (ie. res.data),
             // we use _self here since we all hate that moment
             // when the browser opens a new tab
             Cookies.remove("room_id");
+            console.log(password);
+            hash = CryptoJS.SHA256(password).toString();
+            privateKey = BigInt(toASCII(hash));
+            localStorage.setItem('password', privateKey);
+            console.log(privateKey);
             window.open(res.data, "_self")
         }
     </script>

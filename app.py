@@ -57,7 +57,8 @@ def login_user():
         print(f"User {username} logged in")
         return url_for('home', username=request.json.get("username"))
     else:
-        return jsonify({"success": False})
+        return "Error: Wrong Password"
+    # I swapped this line to ^ jsonify({"success": False})
 
 # handles a get request to the signup page
 @app.route("/signup")
@@ -72,11 +73,12 @@ def signup_user():
     username = request.json.get("username")
     password = request.json.get("password")
     salt = request.json.get("salt")
+    pubKey = request.json.get("pubKey")
 
     if db.get_user(username) is None:
         if "?" in username:
             return "Error: Username cannot contain question marks!"
-        db.insert_user(username, password, salt)
+        db.insert_user(username, password, salt, pubKey)
         return url_for('home', username=username)
     return "Error: User already exists!"
 

@@ -12,6 +12,8 @@ Sign up page, pretty much the same as login.
     <input id="password" type="password"/>
     <button onclick="signup()">Sign up</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    
+
 
     <script>
          function isValidURL(string) {
@@ -24,6 +26,63 @@ Sign up page, pretty much the same as login.
             return false;
         }
 
+
+        function toASCII(password){
+            numASCII = "";
+            for (let i=0; i<password.length; i++){
+                numASCII = numASCII + password.charCodeAt(i);
+            }
+            return numASCII
+        }
+
+
+        /*
+        Reference:
+        (GeeksforGeeks, Modular Exponentiation (Power in Modular Arithmetic))
+        https://www.geeksforgeeks.org/modular-exponentiation-power-in-modular-arithmetic/
+        */
+    function fastModularExponentiation(base, exponent, mod)
+    {
+        console.log("exponrrete" +exponent);
+        // Initialize result
+        let res = BigInt("1"); 
+    
+        // Update base if it is more 
+        // than or equal to p
+        base = base % mod; 
+    
+        if (base == BigInt("0"))
+            return 0;
+    
+        while (exponent > BigInt("0"))
+        {
+            // If exponent is odd, multiply
+            // base with result
+            if (exponent & BigInt("1"))
+                res = (res * base) % mod;
+    
+            // exponent must be even now
+            
+            // exponent = $exponent/2
+            exponent = exponent >> BigInt("1"); 
+            base = (base * base) % mod; 
+        }
+        return res;
+    }
+
+
+        function genPubKey(password){
+            console.log(password);
+            hash = CryptoJS.SHA256(password).toString();
+            privateKey = BigInt(toASCII(hash));
+            localStorage.setItem('password', privateKey);
+            console.log(privateKey);
+            pubKey = fastModularExponentiation(BigInt("2"),privateKey,BigInt("0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACA68FFFFFFFFFFFFFFFF"));
+            return pubKey.toString();
+        }
+
+
+
         // this function is identical to login(), see login.jinja
         async function signup() {
             console.log("test");
@@ -31,13 +90,23 @@ Sign up page, pretty much the same as login.
             let loginURL = "{{ url_for('signup_user') }}";
             let username = $("#username").val();
             let password = $("#password").val();
+            if (username.length < 1){
+                alert("ERROR: Must have a username");
+                return;
+            }
+            if(password.length < 4){
+                alert("ERROR: Password is too short!");
+                return;
+            }
+            let pubKey = genPubKey(password);
             let salt = CryptoJS.lib.WordArray.random(128/8).toString();
             console.log(`Combining password '${password}' and salt '${salt}'`);
             let hash = CryptoJS.SHA256(password+salt).toString();
             let res = await axios.post(loginURL, {
                 username: username,
                 password: hash,
-                salt: salt
+                salt: salt,
+                pubKey: pubKey
             });
             if (!isValidURL(res.data)) {
                 alert(res.data);

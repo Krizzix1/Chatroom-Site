@@ -95,10 +95,14 @@
 </section>
 </main>
 <script src="/static/js/libs/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
 
 
 <script>
     let room_id = 0;
+    let created_rooms = {};
+    let sym_key = "";
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -148,10 +152,20 @@
     const socket = io();
 
     // an incoming message arrives, we'll add the message to the message box
-    socket.on("incoming", (msg, color="black") => {
-        console.log("incoming called");
-        add_message(msg, color);
+    socket.on("incoming", (msg,color="black") => {
+            add_message(msg, color);
     })
+
+    socket.on("incomingEncrypted", (msg,username,color="black") => {
+        console.log("incoming called    " + sym_key);
+        console.log("ENCRYPTED : " + msg);
+        var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
+        console.log("DECRYPTED : " + decryptedMsg);
+        add_message(username + ": " + decryptedMsg, color);
+    })
+
+
+
 
     socket.on("show_history", (msg, userA, userB, color="black") => {
         console.log("showhistory called");
@@ -162,10 +176,10 @@
             console.log(newmsg[i][newmsg[i].length-1]);
             console.log(newmsg[i][newmsg[i].length-1] == "a");
             if(newmsg[i][newmsg[i].length-1] == "a"){
-                add_message(userA + ": "+newmsg[i].slice(0,-1),color);
+                add_message(userA + ": "+ CryptoJS.AES.decrypt(newmsg[i].slice(0,-1), sym_key).toString(CryptoJS.enc.Utf8),color);
             }
             else{
-                add_message(userB + ": " + newmsg[i].slice(0,-1),color);
+                add_message(userB + ": " + CryptoJS.AES.decrypt(newmsg[i].slice(0,-1), sym_key).toString(CryptoJS.enc.Utf8),color);
             }
             
         }
@@ -200,14 +214,75 @@
         }
     });
 
+
+    function fastModularExponentiation(base, exponent, mod)
+    {
+        console.log("exponrrete" +exponent);
+        // Initialize result
+        let res = BigInt("1"); 
+    
+        // Update base if it is more 
+        // than or equal to p
+        base = base % mod; 
+    
+        if (base == BigInt("0"))
+            return 0;
+    
+        while (exponent > BigInt("0"))
+        {
+            // If exponent is odd, multiply
+            // base with result
+            if (exponent & BigInt("1"))
+                res = (res * base) % mod;
+    
+            // exponent must be even now
+            
+            // exponent = $exponent/2
+            exponent = exponent/ 2n; 
+            base = (base * base) % mod; 
+        }
+        return res;
+    }
+
+
+    socket.on('make_key', (receiverPubKey, id) => {
+        console.log("MAKEKEY called"); 
+        console.log(created_rooms);
+        console.log(created_rooms[id]);
+        
+        if (created_rooms[id] != undefined){
+            sym_key = created_rooms[id];
+            console.log("EXISTS");
+            return;
+        }
+
+        var privateKey = localStorage.getItem('password');
+
+        sym_key = fastModularExponentiation(BigInt(receiverPubKey),BigInt(privateKey),BigInt("0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACA68FFFFFFFFFFFFFFFF")).toString();
+        console.log("SYM KEY" + sym_key);
+        console.log("TYPE:  " + typeof(sym_key));
+        var msg = "hello world";
+        console.log("Message: " + msg);
+        var encryptedMsg = CryptoJS.AES.encrypt(msg, sym_key);
+        console.log("Encrypted msg: " + encryptedMsg);
+        var decryptedMsg = CryptoJS.AES.decrypt(encryptedMsg, sym_key).toString(CryptoJS.enc.Utf8);
+        console.log("DECRYPTED MSG: " + decryptedMsg);
+        created_rooms[id] = sym_key;
+
+    })
+
     function send() {
-        console.log("send called");
         let message = $("#message").val();
         $("#message").val("");
-        
-        socket.emit("update_history",username,$("#receiver").val(),message )
+        if (message.includes("ⴰ𐄂Ⱞ𐎀")){
+            return;
+        }
+        var encryptedMsg = CryptoJS.AES.encrypt(message, sym_key).toString();
+        console.log("ENCRYPTED MSG " + encryptedMsg)
+        socket.emit("update_history",username,$("#receiver").val(),encryptedMsg )
+        console.log("test");
 
-        socket.emit("send", username, message, room_id);  
+        socket.emit("send", username, encryptedMsg, room_id);  
     } 
 
     // we emit a join room event to the server to join a room
@@ -250,8 +325,10 @@
     // called when an incoming message has reached a client
     function add_message(message, color) {
         let box = $("#message_box");
+        console.log(message);
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
+        console.log("ADDED MESSAGE");
     }
     function addFriend() {
         let friendUsername = $("#friend_username").val();

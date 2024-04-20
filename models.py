@@ -30,6 +30,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, primary_key=True)
     password: Mapped[str] = mapped_column(String)
     salt: Mapped[str] = mapped_column(String, default="")
+    pubKey: Mapped[str] = mapped_column(String, default="")
     friends: Mapped[str] = mapped_column(String, default="")
     incoming: Mapped[str] = mapped_column(String, default="")
     outgoing: Mapped[str] = mapped_column(String, default="")
@@ -44,8 +45,6 @@ class chat_history(Base):
     id: Mapped[Integer] = mapped_column(Integer, primary_key=True, index=True)
     userA: Mapped[str] = mapped_column(String)
     userB: Mapped[str] = mapped_column(String)
-    keyA: Mapped[str] = mapped_column(String,default="")
-    keyB: Mapped[str] = mapped_column(String,default="")
     History: Mapped[str] = mapped_column(String, default="")
     
 
