@@ -156,14 +156,16 @@
             add_message(msg, color);
     })
 
-    socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
-        var newhmac = "CryptoJS.HmacSHA256(msg, sym_key).toString()";
-        if (newhmac != hmac){
-            socket.emit("undo_history",username,$("#receiver").val());
-            return;
-        }
-        var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
-        add_message(username + ": " + decryptedMsg, color);
+socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
+        setTimeout(function() {
+            var newhmac = CryptoJS.HmacSHA256(msg, sym_key).toString();
+            if (newhmac != hmac){
+                socket.emit("undo_history",username,$("#receiver").val());
+                return;
+            }
+            var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
+            add_message(username + ": " + decryptedMsg, color);
+        }, 100);
     })
 
 
@@ -173,9 +175,7 @@
         let box = $("#message_box");
         box.empty();
         newmsg = msg.split("ⴰ𐄂Ⱞ𐎀");
-        console.log("DEBUG MSG IS " + newmsg);
         for (var i = 0; i<newmsg.length;i++){
-            console.log("IN LOOPS");
             console.log(newmsg[i][newmsg[i].length-1]);
             console.log(newmsg[i][newmsg[i].length-1] == "a");
             if(newmsg[i][newmsg[i].length-1] == "a"){
