@@ -156,11 +156,12 @@
             add_message(msg, color);
     })
 
-    socket.on("incomingEncrypted", (msg,username,color="black") => {
-        console.log("incoming called    " + sym_key);
-        console.log("ENCRYPTED : " + msg);
+    socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
+        var newhmac = CryptoJS.HmacSHA256(msg, sym_key).toString();
+        if (newhmac != hmac){
+            return;
+        }
         var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
-        console.log("DECRYPTED : " + decryptedMsg);
         add_message(username + ": " + decryptedMsg, color);
     })
 
@@ -278,11 +279,11 @@
             return;
         }
         var encryptedMsg = CryptoJS.AES.encrypt(message, sym_key).toString();
-        console.log("ENCRYPTED MSG " + encryptedMsg)
+        var hmac = CryptoJS.HmacSHA256(message, sym_key).toString();
+        socket.emit("send", username, encryptedMsg, room_id, hmac); 
         socket.emit("update_history",username,$("#receiver").val(),encryptedMsg )
         console.log("test");
-
-        socket.emit("send", username, encryptedMsg, room_id);  
+ 
     } 
 
     // we emit a join room event to the server to join a room

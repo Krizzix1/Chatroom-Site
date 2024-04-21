@@ -42,8 +42,8 @@ def disconnect():
 
 # send message event handler
 @socketio.on("send")
-def send(username, message, room_id):
-    emit("incomingEncrypted", (message, username, "black"), to=room_id)
+def send(username, message, room_id, hmac):
+    emit("incomingEncrypted", (message, username, hmac,"black"), to=room_id)
     
 
 
