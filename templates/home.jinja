@@ -157,15 +157,16 @@
     })
 
     socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
-        var newhmac = "CryptoJS.HmacSHA256(msg, sym_key).toString()";
-        if (newhmac != hmac){
-            socket.emit("undo_history",username,$("#receiver").val());
-            return;
-        }
-        var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
-        add_message(username + ": " + decryptedMsg, color);
+        setTimeout(function() {
+            var newhmac = "CryptoJS.HmacSHA256(msg, sym_key).toString()";
+            if (newhmac != hmac){
+                socket.emit("undo_history",username,$("#receiver").val());
+                return;
+            }
+            var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
+            add_message(username + ": " + decryptedMsg, color);
+        }, 100);
     })
-
 
 
 
