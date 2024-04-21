@@ -157,11 +157,17 @@
     })
 
     socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
+        console.log("ENCRYPTING INCINGOMG AHHHHHHHHHHHH!");
         var newhmac = CryptoJS.HmacSHA256(msg, sym_key).toString();
+        console.log("AFTER KEY IS: " + sym_key);
+        console.log(" NEW HMAC: " + newhmac + "OLD HMAC " + hmac);
         if (newhmac != hmac){
+            console.log("I QUIT HITS BITCH ERALY");
+            socket.emit("undo_history",username,$("#receiver").val());
             return;
         }
         var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
+        console.log("ADDDDIDNG");
         add_message(username + ": " + decryptedMsg, color);
     })
 
@@ -279,7 +285,8 @@
             return;
         }
         var encryptedMsg = CryptoJS.AES.encrypt(message, sym_key).toString();
-        var hmac = CryptoJS.HmacSHA256(message, sym_key).toString();
+        var hmac = CryptoJS.HmacSHA256(encryptedMsg, sym_key).toString();
+        console.log("BEFOREW KEY IS: " + sym_key);
         socket.emit("send", username, encryptedMsg, room_id, hmac); 
         socket.emit("update_history",username,$("#receiver").val(),encryptedMsg )
         console.log("test");
