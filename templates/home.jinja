@@ -157,17 +157,12 @@
     })
 
     socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
-        console.log("ENCRYPTING INCINGOMG AHHHHHHHHHHHH!");
         var newhmac = "CryptoJS.HmacSHA256(msg, sym_key).toString()";
-        console.log("AFTER KEY IS: " + sym_key);
-        console.log(" NEW HMAC: " + newhmac + "OLD HMAC " + hmac);
         if (newhmac != hmac){
-            console.log("I QUIT HITS BITCH ERALY");
             socket.emit("undo_history",username,$("#receiver").val());
             return;
         }
         var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
-        console.log("ADDDDIDNG");
         add_message(username + ": " + decryptedMsg, color);
     })
 
@@ -175,17 +170,18 @@
 
 
     socket.on("show_history", (msg, userA, userB, color="black") => {
-        console.log("showhistory called");
         let box = $("#message_box");
         box.empty();
-        newmsg = msg.split("ⴰ𐄂Ⱞ𐎀")
+        newmsg = msg.split("ⴰ𐄂Ⱞ𐎀");
+        console.log("DEBUG MSG IS " + newmsg);
         for (var i = 0; i<newmsg.length;i++){
+            console.log("IN LOOPS");
             console.log(newmsg[i][newmsg[i].length-1]);
             console.log(newmsg[i][newmsg[i].length-1] == "a");
             if(newmsg[i][newmsg[i].length-1] == "a"){
                 add_message(userA + ": "+ CryptoJS.AES.decrypt(newmsg[i].slice(0,-1), sym_key).toString(CryptoJS.enc.Utf8),color);
             }
-            else{
+            else if(newmsg[i][newmsg[i].length-1] == "b"){
                 add_message(userB + ": " + CryptoJS.AES.decrypt(newmsg[i].slice(0,-1), sym_key).toString(CryptoJS.enc.Utf8),color);
             }
             
@@ -224,7 +220,6 @@
 
     function fastModularExponentiation(base, exponent, mod)
     {
-        console.log("exponrrete" +exponent);
         // Initialize result
         let res = BigInt("1"); 
     
@@ -253,27 +248,20 @@
 
 
     socket.on('make_key', (receiverPubKey, id) => {
-        console.log("MAKEKEY called"); 
         console.log(created_rooms);
         console.log(created_rooms[id]);
         
         if (created_rooms[id] != undefined){
             sym_key = created_rooms[id];
-            console.log("EXISTS");
             return;
         }
 
         var privateKey = localStorage.getItem('password');
 
         sym_key = fastModularExponentiation(BigInt(receiverPubKey),BigInt(privateKey),BigInt("0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACA68FFFFFFFFFFFFFFFF")).toString();
-        console.log("SYM KEY" + sym_key);
-        console.log("TYPE:  " + typeof(sym_key));
         var msg = "hello world";
-        console.log("Message: " + msg);
         var encryptedMsg = CryptoJS.AES.encrypt(msg, sym_key);
-        console.log("Encrypted msg: " + encryptedMsg);
         var decryptedMsg = CryptoJS.AES.decrypt(encryptedMsg, sym_key).toString(CryptoJS.enc.Utf8);
-        console.log("DECRYPTED MSG: " + decryptedMsg);
         created_rooms[id] = sym_key;
 
     })
@@ -294,7 +282,6 @@
     // we emit a join room event to the server to join a room
     function join_room(receiver) {
         $('#receiver').val(receiver);
-        console.log("join_room called");
         if (Cookies.get("room_id") != undefined){
             leave()
         }
@@ -318,7 +305,6 @@
     // function when the user clicks on "Leave Room"
     // emits a "leave" event, telling the server that we want to leave the room
     function leave() {
-        console.log("LEAVE called");
         Cookies.remove("room_id");
         socket.emit("leave", username, room_id);
         $("#input_box").hide();
@@ -331,10 +317,8 @@
     // called when an incoming message has reached a client
     function add_message(message, color) {
         let box = $("#message_box");
-        console.log(message);
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
-        console.log("ADDED MESSAGE");
     }
     function addFriend() {
         let friendUsername = $("#friend_username").val();
@@ -352,7 +336,6 @@
         });
     }
     function updateFriendList() {
-        console.log("updateFriendList called");  // Debug print
         const username = Cookies.get("username");
         axios.get(`/get_friends/${username}`)
             .then(response => {
