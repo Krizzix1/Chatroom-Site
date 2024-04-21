@@ -154,3 +154,26 @@ def update_history(userA, userB, message):
             else:
                 history.History += delim + message + identifier
             session.commit()
+
+def undo_history(userA, userB):
+    with Session(engine) as session:
+        delim = "ⴰ𐄂Ⱞ𐎀"
+        history = session.query(chat_history).filter(chat_history.userA == userA, chat_history.userB == userB).first()
+        if history == None:
+            history = session.query(chat_history).filter(chat_history.userA == userB, chat_history.userB == userA).first()
+
+        retrievedHistory = history.History
+        retrievedHistory = retrievedHistory.split(delim)
+        retrievedHistory = retrievedHistory[:-1]
+        if len(retrievedHistory) == 0:
+            history.History = ""
+            session.commit()
+            return
+        new_history = retrievedHistory[0] + delim
+        for i in retrievedHistory:
+            new_history = new_history + delim + i
+        history.History = new_history
+        session.commit()
+        
+
+        
