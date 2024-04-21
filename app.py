@@ -139,4 +139,4 @@ def get_outgoing_requests(username):
     return jsonify(outgoing_requests)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, ssl_context=("cert.pem", "key.pem"), debug=True)
