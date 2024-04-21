@@ -286,8 +286,8 @@
         }
         var encryptedMsg = CryptoJS.AES.encrypt(message, sym_key).toString();
         var hmac = CryptoJS.HmacSHA256(encryptedMsg, sym_key).toString();
-        socket.emit("send", username, encryptedMsg, room_id, hmac); 
         socket.emit("update_history",username,$("#receiver").val(),encryptedMsg )
+        socket.emit("send", username, encryptedMsg, room_id, hmac); 
  
     } 
 

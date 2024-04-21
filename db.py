@@ -163,15 +163,18 @@ def undo_history(userA, userB):
             history = session.query(chat_history).filter(chat_history.userA == userB, chat_history.userB == userA).first()
 
         retrievedHistory = history.History
+        print(retrievedHistory)
         retrievedHistory = retrievedHistory.split(delim)
         retrievedHistory = retrievedHistory[:-1]
         if len(retrievedHistory) == 0:
+            print("EMPTY")
             history.History = ""
             session.commit()
             return
-        new_history = retrievedHistory[0] + delim
-        for i in retrievedHistory:
-            new_history = new_history + delim + i
+        print(retrievedHistory)
+        new_history = retrievedHistory[0]
+        for i in range(1,len(retrievedHistory)):
+            new_history = new_history + delim + retrievedHistory[i]
         history.History = new_history
         session.commit()
         

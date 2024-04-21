@@ -55,6 +55,7 @@ def update_history(userA, userB, message):
 
 @socketio.on("undo_history")
 def undo_history(userA, userB):
+    print("UNDOING HISTRY")
     db.undo_history(userA,userB)
 
 
