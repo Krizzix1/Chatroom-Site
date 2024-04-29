@@ -104,7 +104,7 @@ def get_friends(username):
 @app.route('/add_friend', methods=['POST'])
 def add_friend():
     data = request.get_json()
-    print(f"Adding friend: {data['friend_username']} to user: {data['username']}")  # Debug print
+    print(f"Adding friend: {data['friend_username']} to user: {data['username']}")
     db.add_friend(data['username'], data['friend_username'])
     return "Friend added"
 
