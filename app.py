@@ -38,6 +38,7 @@ def index():
 def login():    
     return render_template("login.jinja")
 
+
 # handles a post request when the user clicks the log in button
 @app.route("/login/user", methods=["POST"])
 def login_user():
@@ -55,6 +56,7 @@ def login_user():
     print(f"password: {user.password} salt: {user.salt} hashed_password: {hashed_password} user.password: {user.password}")
     if hashed_password == user.password:
         print(f"User {username} logged in")
+        socketio.emit('all_status', {'username': username, 'status': 'online'})
         return url_for('home', username=request.json.get("username"))
     else:
         return "Error: Wrong Password"

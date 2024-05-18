@@ -17,6 +17,7 @@ from models import Room
 import db
 room = Room()
 
+
 # when the client connects to a socket
 # this event is emitted when the io() function is called in JS
 @socketio.on('connect')
@@ -32,20 +33,28 @@ def connect():
 
 # event when client disconnects
 # quite unreliable use sparingly
+online={}
+@socketio.on('connect')
+def connect():
+    username = request.cookies.get("username")
+    if username is None:
+        return
+    online[username] = 'online'
+    emit('all_status', online, broadcast=True)
+
 @socketio.on('disconnect')
 def disconnect():
     username = request.cookies.get("username")
-    room_id = request.cookies.get("room_id")
-    if room_id is None or username is None:
+    if username is None:
         return
-    emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
+    online[username] = 'offline'
+    emit('all_status', online, broadcast=True)
+
 
 # send message event handler
 @socketio.on("send")
 def send(username, message, room_id, hmac):
     emit("incomingEncrypted", (message, username, hmac,"black"), to=room_id)
-    
-
 
 
 @socketio.on("update_history")
