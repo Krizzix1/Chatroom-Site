@@ -71,7 +71,6 @@
     </section>
 </main>
 <main style="display: flex; justify-content: space-between;">
-    <!-- Existing chat box and input box sections -->
     ...
     <!-- New friend list section -->
     <section id="friend_list_section" style="border: 1px solid black; height: 400px; width: 800px; overflow: auto; padding: 2px; display: flex;">
@@ -165,7 +164,7 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             }
             var decryptedMsg = CryptoJS.AES.decrypt(msg, sym_key).toString(CryptoJS.enc.Utf8);
             add_message(username + ": " + decryptedMsg, color);
-        }, 100);
+        }, 10);
     })
 
 
@@ -185,27 +184,16 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             }
             
         }
-
-
         
     })
-    // we'll send the message to the server by emitting a "send" event
     socket.on('friendListUpdate', (friendList) => {
-        // Clear the current friend list
         $('#friendList').empty();
-
-        // Add each friend to the friend list
         friendList.forEach((friend) => {
-            // Create a new list item for the friend
             let friendListItem = $(`<li>${friend}</li>`);
-            // Add a click event handler to the list item
             friendListItem.on('click', () => {
-                // Set the receiver input to the friend's username
                 $('#receiver').val(friend);
-                // Join the chatroom with the friend
                 join_room();
             });
-            // Append the list item to the friend list
             $('#friends-list').append(friendListItem);
         });
     });
@@ -221,23 +209,18 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
     {
         // Initialize result
         let res = BigInt("1"); 
-    
         // Update base if it is more 
         // than or equal to p
         base = base % mod; 
-    
         if (base == BigInt("0"))
-            return 0;
-    
+            return 0;  
         while (exponent > BigInt("0"))
         {
             // If exponent is odd, multiply
             // base with result
             if (exponent & BigInt("1"))
                 res = (res * base) % mod;
-    
             // exponent must be even now
-            
             // exponent = $exponent/2
             exponent = exponent/ 2n; 
             base = (base * base) % mod; 
@@ -254,9 +237,7 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             sym_key = created_rooms[id];
             return;
         }
-
         var privateKey = localStorage.getItem('password');
-
         sym_key = fastModularExponentiation(BigInt(receiverPubKey),BigInt(privateKey),BigInt("0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACA68FFFFFFFFFFFFFFFF")).toString();
         var msg = "hello world";
         var encryptedMsg = CryptoJS.AES.encrypt(msg, sym_key);
@@ -327,7 +308,6 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
         })
         .then(function (response) {
             console.log(response);
-            // Emit a 'friendAdded' event to the server
             socket.emit('friendAdded', { username: "{{ username }}", friend_username: friendUsername });
         })
         .catch(function (error) {
@@ -338,7 +318,8 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
         const username = Cookies.get("username");
         axios.get(`/get_friends/${username}`)
             .then(response => {
-                const friends = response.data;
+                let friends = response.data;
+                friends = friends.filter(friend => friend);
                 const friendsListElement = $("#friends-list");
                 friendsListElement.empty();
                 friends.forEach(friend => {
@@ -347,6 +328,11 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
                     const link = $("<a>").text(friend);
                     link.click(() => join_room(friend));
                     li.append(link);
+
+                    const removeButton = $("<button>").text("Remove");
+                    removeButton.click(() => removeFriend(friend));
+                    li.append(removeButton);
+
                     friendsListElement.append(li);
                 });
             })
@@ -437,6 +423,18 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             console.log(error);
         });
     }
-
+    function removeFriend(friendUsername) {
+        axios.post('/remove_friend', {
+            username: Cookies.get("username"),
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            updateFriendList();
+        })
+        .catch(function (error) {
+            console.error("deleto", error);
+        });
+    }
 </script>
 {% endblock %}

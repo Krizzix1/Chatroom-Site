@@ -104,7 +104,7 @@ def get_friends(username):
 @app.route('/add_friend', methods=['POST'])
 def add_friend():
     data = request.get_json()
-    print(f"Adding friend: {data['friend_username']} to user: {data['username']}")  # Debug print
+    print(f"Adding friend: {data['friend_username']} to user: {data['username']}")
     db.add_friend(data['username'], data['friend_username'])
     return "Friend added"
 
@@ -137,6 +137,10 @@ def get_incoming_requests(username):
 def get_outgoing_requests(username):
     outgoing_requests = db.get_outgoing_requests(username)
     return jsonify(outgoing_requests)
-
+@app.route('/remove_friend', methods=['POST'])
+def remove_friend():
+    data = request.get_json()
+    db.remove_friend(data['username'], data['friend_username'])
+    return jsonify()
 if __name__ == '__main__':
     socketio.run(app, ssl_context=("cert.pem", "key.pem"), debug=True)

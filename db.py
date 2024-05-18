@@ -89,7 +89,6 @@ def approve_friend_request(username: str, friend_username: str):
             friend_user.friends = friend_user.friends + '?' + username if friend_user.friends else username
         else:
             return {'error': 'No outgoing friend request to ' + friend_username}
-
         session.commit()
         return {'username': username, 'friend_username': friend_username}
         
@@ -102,7 +101,7 @@ def send_friend_request(username: str, friend_username: str):
         requesting_user = session.query(User).filter_by(username=username).first()
         if user is not None:
             if requesting_user.friends and friend_username in requesting_user.friends.split('?'):
-                print(f"{friend_username} is already your friend.")
+                print(f"{friend_username} is already friended up")
                 return
             if user.incoming and username not in user.incoming.split('?'):
                 user.incoming += '?' + username
@@ -177,6 +176,16 @@ def undo_history(userA, userB):
             new_history = new_history + delim + retrievedHistory[i]
         history.History = new_history
         session.commit()
-        
+def remove_friend(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        friend_user = session.query(User).filter_by(username=friend_username).first()
+        if friend_username in user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in user.friends.split('?') if fr != friend_username)
+            user.friends = updated_friends if updated_friends else ''
+        if username in friend_user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in friend_user.friends.split('?') if fr != username)
+            friend_user.friends = updated_friends if updated_friends else ''
+        session.commit()
 
         
