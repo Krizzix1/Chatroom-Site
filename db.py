@@ -176,6 +176,16 @@ def undo_history(userA, userB):
             new_history = new_history + delim + retrievedHistory[i]
         history.History = new_history
         session.commit()
-        
+def remove_friend(username: str, friend_username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        friend_user = session.query(User).filter_by(username=friend_username).first()
+        if friend_username in user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in user.friends.split('?') if fr != friend_username)
+            user.friends = updated_friends if updated_friends else ''
+        if username in friend_user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in friend_user.friends.split('?') if fr != username)
+            friend_user.friends = updated_friends if updated_friends else ''
+        session.commit()
 
         

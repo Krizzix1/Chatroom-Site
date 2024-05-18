@@ -320,7 +320,8 @@
         const username = Cookies.get("username");
         axios.get(`/get_friends/${username}`)
             .then(response => {
-                const friends = response.data;
+                let friends = response.data;
+                friends = friends.filter(friend => friend);
                 const friendsListElement = $("#friends-list");
                 friendsListElement.empty();
                 friends.forEach(friend => {
@@ -329,6 +330,11 @@
                     const link = $("<a>").text(friend);
                     link.click(() => join_room(friend));
                     li.append(link);
+
+                    const removeButton = $("<button>").text("Remove");
+                    removeButton.click(() => removeFriend(friend));
+                    li.append(removeButton);
+
                     friendsListElement.append(li);
                 });
             })
@@ -419,6 +425,18 @@
             console.log(error);
         });
     }
-
+    function removeFriend(friendUsername) {
+        axios.post('/remove_friend', {
+            username: Cookies.get("username"),
+            friend_username: friendUsername
+        })
+        .then(function (response) {
+            console.log(response);
+            updateFriendList();
+        })
+        .catch(function (error) {
+            console.error("deleto", error);
+        });
+    }
 </script>
 {% endblock %}
