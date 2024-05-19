@@ -38,8 +38,31 @@ def index():
 def login():    
     return render_template("login.jinja")
 
+@app.route("/forum")
+def forum():
+    posts = db.get_posts() 
+    username = request.cookies.get('username')
+    print(f"username: {username}")
+    permissions = db.get_permissions(username)
+    return render_template("forum.jinja", posts=posts, username=username, permissions=permissions)
+@app.route('/delete_comment', methods=['POST'])
+def delete_comment():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    comment = data.get('comment')
 
-# handles a post request when the user clicks the log in button
+    if not all([post_id, comment]):
+        return 'Missing data', 400
+
+    request_username = request.json.get("username")
+    print('request_username: ', request_username)
+
+    db_username = db.delete_comment(post_id, comment, request_username)
+
+    if db_username != request_username:
+        return 'Unauthorized', 403
+
+    return 'Comment deleted', 200
 @app.route("/login/user", methods=["POST"])
 def login_user():
     if not request.is_json:

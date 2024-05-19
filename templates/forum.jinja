@@ -1,0 +1,131 @@
+{% extends 'base.jinja' %}
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .post {
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 40%; 
+        margin: 20px auto; 
+    }
+    .post h2 {
+        margin-top: 0;
+        color: #333;
+    }
+    .post p {
+        color: #666;
+    }
+    .post p:first-child {
+        font-weight: bold;
+    }
+    .post-details {
+        font-size: 0.8em;
+        color: #999;
+    }
+    .badge {
+        display: inline-block;
+        padding: .25em .4em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: .75rem; 
+        color: #fff;
+        background-color: #007bff; 
+    }
+    .badge-purple {
+        background-color: purple;
+        color: white;
+    }
+    .badge-green {
+        background-color: green;
+        color: white;
+    }
+    .arrow-down {
+        cursor: pointer;
+        text-align: center;
+    }
+    .comments {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        margin-top: 10px;
+    }
+    .comments-header {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .post p:not(.comments-header):first-child {
+        font-weight: normal;
+        color: #666;
+    
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<h1 style="text-align: center; color: #333;">Forum</h1>
+{% for post in posts %}
+<div class="post" onclick="toggleComments({{ post['id'] }})">
+    <h2>{{ post['title'] }} <span class="post-details">#{{ post['id'] }} | {{ post['user'] }}  <span class="receiver-permission" data-permission="{{ post['permissions'] }}">{{ post['permissions'] }}</span></span></h2>
+    <p>{{ post['message'] }}</p>
+    <div class="arrow-down" onclick="event.stopPropagation(); toggleComments({{ post['id'] }})">
+        <p style="font-size: 0.8em; color: #999;">Click to expand</p>
+    </div>
+    <div id="comments-{{ post['id'] }}" class="comments" style="display: none;">
+        <p class="comments-header">Comments</p>
+        {% set messages = post['comments'].split('⌚') %}
+    {% for comment in messages %}
+        <p>{{ comment }}
+        {% if permissions == 'staff' %}
+            <button onclick="deleteComment({{ post['id'] }}, '{{ comment }}')">Delete</button>
+        {% endif %}
+        </p>
+    {% endfor %}
+    </div>
+</div>
+{% endfor %}
+<script>
+    let receiverPermissions = document.getElementsByClassName('receiver-permission');
+    for(let i = 0; i < receiverPermissions.length; i++) {
+        let permission = receiverPermissions[i].getAttribute('data-permission');
+        receiverPermissions[i].textContent = permission;
+        if (permission === 'staff') {
+            receiverPermissions[i].className += ' badge badge-purple';
+        } else if (permission === 'student') {
+            receiverPermissions[i].className += ' badge badge-green';
+        }
+    }
+
+
+    function toggleComments(postId) {
+        var commentsDiv = document.getElementById('comments-' + postId);
+        var arrow = document.getElementById('arrow-' + postId);
+        if (commentsDiv.style.display === "none") {
+            commentsDiv.style.display = "block";
+            arrow.style.transform = "rotate(180deg)";
+        } else {
+            commentsDiv.style.display = "none";
+            arrow.style.transform = "rotate(0deg)";
+        }
+    }
+    function deleteComment(postId, comment) {
+        axios.post('/delete_comment', {
+            post_id: postId,
+            comment: comment
+        }).then(function (response) {
+            // Code to remove the comment from the page or refresh the page
+        }).catch(function (error) {
+            console.log(error);
+        });
+    }
+</script>
+{% endblock %}
