@@ -1,6 +1,7 @@
 {% extends 'base.jinja' %}
 {% block content %}
 <style>
+
     body {
         font-family: Arial, sans-serif;
     }
@@ -95,20 +96,6 @@
         }
     }
 </style>
-<div style="width: 33%; float: left; padding: 20px;">
-    <h2 style="text-align: left;">Create New Post</h2>
-    <form id="newPostForm" onsubmit="event.preventDefault(); createNewPost();">
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" placeholder="Enter post title..."><br>
-        <label for="message">Message:</label><br>
-        <textarea id="message" name="message" placeholder="Enter your message..."></textarea><br>
-        <input type="hidden" id="postId" name="postId" value="{{ next_post_id }}">
-        <input type="hidden" id="username" name="username" value="{{ username }}">
-        <input type="hidden" id="permissions" name="permissions" value="{{ permissions }}">
-        <input type="submit" value="Submit">
-    </form>
-</div>
-<div></div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <h1 style="text-align: center; color: #333;">Forum</h1>
 {% for post in posts %}
@@ -145,19 +132,66 @@
         </p>
         
     {% endfor %}
-    <form id="commentForm-{{ post['id'] }}" onclick="event.stopPropagation();" onsubmit="event.preventDefault(); addComment({{ post['id'] }});">
+    <form id="commentfrompost{{ post['id'] }}" onclick="event.stopPropagation();" onsubmit="event.preventDefault(); addComment({{ post['id'] }});">
         <textarea name="comment" placeholder="Add a comment..."></textarea>
         <input type="submit" value="Submit">
     </form>
     </div>
 
 </div>
+<style>
+    #newpost {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    #newpost h2 {
+        margin-top: 0;
+    }
+    #newpost label {
+        font-weight: bold;
+    }
+    #newpost input[type="text"],
+    #newpost textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+    }
+    #newpost input[type="submit"] {
+        background-color: #007bee;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+</style>
 
+<div id="newpost">
+    <h2>Create New Post</h2>
+    <form onsubmit="event.preventDefault(); createNewPost();">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" placeholder="Title..."><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" placeholder="Enter your message..."></textarea><br>
+        <input type="hidden" id="postId" name="postId" value="{{ next_post_id }}">
+        <input type="hidden" id="username" name="username" value="{{ username }}">
+        <input type="submit" value="Submit">
+    </form>
+</div>
 {% endfor %}
 <script>
     let receiverPermissions = document.getElementsByClassName('receiver-permission');
     for(let i = 0; i < receiverPermissions.length; i++) {
         let permission = receiverPermissions[i].getAttribute('data-permission');
+        if (['academics', 'administrative staff', 'admin user'].includes(permission)) {
+            permission = 'staff';
+        }
         receiverPermissions[i].textContent = permission;
         if (permission === 'staff') {
             receiverPermissions[i].className += ' badge badge-purple';
@@ -219,7 +253,7 @@
         }
     }
     function addComment(postId) {
-        var commentForm = document.getElementById('commentForm-' + postId);
+        var commentForm = document.getElementById('commentfrompost' + postId);
         var comment = commentForm.comment.value;
         axios.post('/add_comment', {
             post_id: postId,
@@ -230,5 +264,22 @@
             console.log(error);
         });
     }
+    function createNewPost() {
+        var title = document.getElementById('title').value;
+        var message = document.getElementById('message').value;
+        var username = document.getElementById('username').value;
+        console.log(username);
+        console.log("title" + title + "message" + message);
+        axios.post('/create_post', {
+            title: title,
+            message: message,
+            username: username
+        }).then(function (response) {
+            console.log(response.data.message);
+        }).catch(function (error) {
+            console.log(error);
+        });
+    }
     </script>
+    
 {% endblock %}

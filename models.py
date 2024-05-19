@@ -57,7 +57,7 @@ class chat_history(Base):
 #database for posts
 class Post(Base):
     __tablename__ = "Posts"
-    id: Mapped[Integer] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[Integer] = mapped_column(Integer, primary_key=True)
     user: Mapped[str] = mapped_column(String)
     title: Mapped[str] = mapped_column(String)
     message: Mapped[str] = mapped_column(String)

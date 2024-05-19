@@ -45,6 +45,8 @@ def delete_post(post_id: str):
 def get_permissions(username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()
+        if user.permissions in ['academics', 'administrative staff', 'admin user']:
+            return 'staff'
         return user.permissions
 def delete_comment(post_id: str, comment_id: str, request_username: str):
     with Session(engine) as session:
@@ -61,6 +63,19 @@ def add_comment(post_id: str, comment: str):
             post.comments += ' ⌚' + comment
         else:
             post.comments = comment
+        session.commit()
+def create_post(title, message, username):
+    with Session(engine) as session:
+        new_id = len(session.query(Post).all()) + 1
+        print("id" + str(new_id))
+
+        user = session.query(User).filter_by(username=username).first()
+        if user is None:
+            return 
+        permissions = user.permissions
+
+        post = Post(id=new_id, user=username, title=title, message=message, permissions=permissions)
+        session.add(post)
         session.commit()
 def update_post(post_id: str, title: str, message: str):
     with Session(engine) as session:

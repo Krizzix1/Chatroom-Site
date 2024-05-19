@@ -70,11 +70,12 @@ def delete_post():
 @app.route('/edit_post', methods=['POST'])
 def edit_post():
     data = request.get_json()
+    print(f"Data: {data}")
     post_id = data.get('post_id')
     title = data.get('title')
     message = data.get('message')
     db.update_post(post_id, title, message)
-    return jsonify({"message": "Post updated successfully"}), 200
+    return 
 
 @app.route("/add_comment", methods=["POST"])
 def add_comment():
@@ -85,7 +86,17 @@ def add_comment():
     comment = data.get('comment')
     print(f"post_id: {post_id} comment: {comment}")
     db.add_comment(post_id, comment)
-    return jsonify({"message": "Comment added successfully"}), 200
+    return 
+@app.route("/create_post", methods=["POST"])
+def create_post():
+    data = request.get_json()
+    title = data.get('title')
+    message = data.get('message')
+    print(f" title: {title} message: {message}")
+    username = data.get('username')
+    print(f"username: {username}")
+    db.create_post(title, message, username)
+    return 
 @app.template_filter('split_and_filter')
 def split_and_filter(s, delimiter):
     return list(filter(None, s.split(delimiter)))
