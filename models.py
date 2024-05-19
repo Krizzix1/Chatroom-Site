@@ -34,6 +34,8 @@ class User(Base):
     friends: Mapped[str] = mapped_column(String, default="")
     incoming: Mapped[str] = mapped_column(String, default="")
     outgoing: Mapped[str] = mapped_column(String, default="")
+    permissions: Mapped[str] = mapped_column(String, default="")
+    
 
 
 #Counter for unique ID for chatroom history
@@ -51,6 +53,24 @@ class chat_history(Base):
     def __init__(self, userA, userB):
         self.userA = userA
         self.userB = userB
+
+#database for posts
+class Post(Base):
+    __tablename__ = "Posts"
+    id: Mapped[Integer] = mapped_column(Integer, primary_key=True, index=True)
+    user: Mapped[str] = mapped_column(String)
+    title: Mapped[str] = mapped_column(String)
+    message: Mapped[str] = mapped_column(String)
+    permissions: Mapped[str] = mapped_column(String)
+    comments: Mapped[str] = mapped_column(String)
+
+
+    def __init__(self, user, message, time, room):
+        self.user = user
+        self.message = message
+        self.time = time
+        self.room = room
+
 
 
 # stateful counter used to generate the room id

@@ -3,7 +3,7 @@ db
 database file, containing all the logic to interface with the sql database
 '''
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import Session
 from models import *
 
@@ -31,7 +31,23 @@ def insert_user(username: str, password: str, salt: str, pubKey: str, friends: s
 def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
-
+    
+def get_posts():
+    with Session(engine) as session:
+        posts = session.query(Post).order_by(desc(Post.id)).all()
+        return [{'id': post.id, 'user': post.user, 'message': post.message, 'title': post.title, 'permissions': post.permissions, 'comments': post.comments} for post in posts]
+def get_permissions(username: str):
+    with Session(engine) as session:
+        user = session.query(User).filter_by(username=username).first()
+        return user.permissions
+def delete_comment(post_id: str, comment_id: str, request_username: str):
+    with Session(engine) as session:
+        post = session.query(Post).filter_by(id=post_id).first()
+        if comment_id in post.comments.split('⌚'):
+            updated_comments = '⌚'.join(cmt for cmt in post.comments.split('⌚') if cmt != comment_id)
+            post.comments = updated_comments if updated_comments else ''
+            print(post.comments)
+        session.commit()
 def get_friend_list(username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()

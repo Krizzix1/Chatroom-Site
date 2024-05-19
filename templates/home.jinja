@@ -35,14 +35,39 @@
         top: 150px;
 
     }
+    .navbar {
+        background-color: #333;
+        overflow: auto;
+    }
 
+    .navbar-list {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .navbar-item {
+        float: left;
+    }
+
+    .navbar-link {
+        display: block;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    .navbar-link:hover {
+        background-color: #ddd;
+        color: black;
+    }
 </style>
-
-<!--Navbar, you'll see the username here-->
-<nav style="border-bottom: 1px solid black;">
-    <ol style="float: right">
-        <li style="display:inline-block">Username:  {{ username }}</li>
-    </ol>
+<nav class="navbar">
+    <ul class="navbar-list">
+        <li class="navbar-item"><a class="navbar-link" href={{ url_for('forum') }}>Forum</a></li>
+        <!-- Add more links here -->
+    </ul>
 </nav>
 
 <h1>Messaging App </h1>
