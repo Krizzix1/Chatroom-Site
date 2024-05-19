@@ -203,8 +203,17 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             updateOutgoingRequests();
         }
     });
-
-
+    const onlineFriends = {};
+    socket.on('all_status', function(data) {
+        console.log('All status event received:', data);
+        for (const friend in data) {
+            if (data.hasOwnProperty(friend)) {
+                onlineFriends[friend] = data[friend];
+            }
+        }
+        console.log('Updated onlineFriends:', onlineFriends); 
+        updateFriendList();
+    });
     function fastModularExponentiation(base, exponent, mod)
     {
         // Initialize result
@@ -323,9 +332,11 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
                 const friendsListElement = $("#friends-list");
                 friendsListElement.empty();
                 friends.forEach(friend => {
+                    console.log('Processing friend:', friend); 
                     const li = $("<li>");
-                    li.textContent = friend;
-                    const link = $("<a>").text(friend);
+                    console.log('onelineFriends[friend]:', onlineFriends[friend]);
+                    const status = onlineFriends[friend];
+                    const link = $("<a>").text(friend + " (" + status + ")");
                     link.click(() => join_room(friend));
                     li.append(link);
 
