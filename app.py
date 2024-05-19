@@ -52,17 +52,43 @@ def delete_comment():
     comment = data.get('comment')
 
     if not all([post_id, comment]):
-        return 'Missing data', 400
-
+        return 
     request_username = request.json.get("username")
     print('request_username: ', request_username)
-
     db_username = db.delete_comment(post_id, comment, request_username)
-
     if db_username != request_username:
-        return 'Unauthorized', 403
+        return 
 
-    return 'Comment deleted', 200
+    return 
+@app.route('/delete_post', methods=['POST'])
+def delete_post():
+    data = request.get_json()
+    print(f"Data: {data}")
+    post_id = data.get('post_id')
+    db.delete_post(post_id)
+    return
+@app.route('/edit_post', methods=['POST'])
+def edit_post():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    title = data.get('title')
+    message = data.get('message')
+    db.update_post(post_id, title, message)
+    return jsonify({"message": "Post updated successfully"}), 200
+
+@app.route("/add_comment", methods=["POST"])
+def add_comment():
+    print("Adding comment")
+    data = request.get_json()
+    print(f"Data: {data}")
+    post_id = data.get('post_id')
+    comment = data.get('comment')
+    print(f"post_id: {post_id} comment: {comment}")
+    db.add_comment(post_id, comment)
+    return jsonify({"message": "Comment added successfully"}), 200
+@app.template_filter('split_and_filter')
+def split_and_filter(s, delimiter):
+    return list(filter(None, s.split(delimiter)))
 @app.route("/login/user", methods=["POST"])
 def login_user():
     if not request.is_json:

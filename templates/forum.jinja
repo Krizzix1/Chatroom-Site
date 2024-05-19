@@ -12,6 +12,7 @@
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         width: 40%; 
         margin: 20px auto; 
+        position: relative;
     }
     .post h2 {
         margin-top: 0;
@@ -68,30 +69,90 @@
     .post p:not(.comments-header):first-child {
         font-weight: normal;
         color: #666;
-    
+        
+    }
+    .delete-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: red;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .edit-button {
+        position: absolute;
+        top: 10px;
+        right: 50px;
+        background-color: yellow;
+        border: none;
+        border-radius: 50%;
+        color: black;
+        padding: 5px 10px;
+        cursor: pointer;
+        }
     }
 </style>
+<div style="width: 33%; float: left; padding: 20px;">
+    <h2 style="text-align: left;">Create New Post</h2>
+    <form id="newPostForm" onsubmit="event.preventDefault(); createNewPost();">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" placeholder="Enter post title..."><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" placeholder="Enter your message..."></textarea><br>
+        <input type="hidden" id="postId" name="postId" value="{{ next_post_id }}">
+        <input type="hidden" id="username" name="username" value="{{ username }}">
+        <input type="hidden" id="permissions" name="permissions" value="{{ permissions }}">
+        <input type="submit" value="Submit">
+    </form>
+</div>
+<div></div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <h1 style="text-align: center; color: #333;">Forum</h1>
 {% for post in posts %}
+
+{# <div class="post" onclick="toggleComments({{ post['id'] }})">
+    {% if permissions == 'staff' %}
+        <button style="float: left; margin-right: 10px;" onclick="event.stopPropagation(); deletePost({{ post['id'] }})">Delete Post</button>
+    {% endif %}
+</div> #}
 <div class="post" onclick="toggleComments({{ post['id'] }})">
-    <h2>{{ post['title'] }} <span class="post-details">#{{ post['id'] }} | {{ post['user'] }}  <span class="receiver-permission" data-permission="{{ post['permissions'] }}">{{ post['permissions'] }}</span></span></h2>
-    <p>{{ post['message'] }}</p>
+    <h2 id="title-{{ post['id'] }}">{{ post['title'] }} <span class="post-details">#{{ post['id'] }} | {{ post['user'] }}  <span class="receiver-permission" data-permission="{{ post['permissions'] }}">{{ post['permissions'] }}</span></span></h2>
+    <p id="message-{{ post['id'] }}">{{ post['message'] }}</p>
     <div class="arrow-down" onclick="event.stopPropagation(); toggleComments({{ post['id'] }})">
         <p style="font-size: 0.8em; color: #999;">Click to expand</p>
+        {# <p style="font-size: 0.8em; color: #999;">&#8595;</p> #}
     </div>
+    {% if permissions == 'staff' %}
+        <button class="delete-button" onclick="event.stopPropagation(); deletePost({{ post['id'] }})">X</button>
+    {% endif %}
+
+    {% if permissions == 'staff' or username == post['user']%}
+        <button class="edit-button" onclick="event.stopPropagation(); editPost({{ post['id'] }})">Edit</button>
+    {% endif %}
+
     <div id="comments-{{ post['id'] }}" class="comments" style="display: none;">
         <p class="comments-header">Comments</p>
-        {% set messages = post['comments'].split('⌚') %}
+        {% set messages = post['comments']|split_and_filter('⌚') %}
+    
     {% for comment in messages %}
         <p>{{ comment }}
-        {% if permissions == 'staff' %}
+        {% if permissions == 'staff' or username == post['user'] %}
             <button onclick="deleteComment({{ post['id'] }}, '{{ comment }}')">Delete</button>
         {% endif %}
         </p>
+        
     {% endfor %}
+    <form id="commentForm-{{ post['id'] }}" onclick="event.stopPropagation();" onsubmit="event.preventDefault(); addComment({{ post['id'] }});">
+        <textarea name="comment" placeholder="Add a comment..."></textarea>
+        <input type="submit" value="Submit">
+    </form>
     </div>
+
 </div>
+
 {% endfor %}
 <script>
     let receiverPermissions = document.getElementsByClassName('receiver-permission');
@@ -122,10 +183,52 @@
             post_id: postId,
             comment: comment
         }).then(function (response) {
-            // Code to remove the comment from the page or refresh the page
         }).catch(function (error) {
             console.log(error);
         });
     }
-</script>
+    function deletePost(postId) {
+        axios.post('/delete_post', {
+            post_id: postId,
+        }).then(function (response) {
+        }).catch(function (error) {
+            console.log(error);
+        });
+    }
+    function editPost(postId) {
+        var title = document.getElementById('title-' + postId);
+        var message = document.getElementById('message-' + postId);
+        if (title.isContentEditable) {
+            title.contentEditable = "false";
+            message.contentEditable = "false";
+            title.style.color = "black";
+            message.style.color = "black";
+            axios.post('/edit_post', {
+                post_id: postId,
+                title: title.textContent,
+                message: message.textContent
+            }).then(function (response) {
+            }).catch(function (error) {
+                console.log(error);
+            });
+        } else {
+            title.contentEditable = "true";
+            message.contentEditable = "true";
+            title.style.color = "red";
+            message.style.color = "red";
+        }
+    }
+    function addComment(postId) {
+        var commentForm = document.getElementById('commentForm-' + postId);
+        var comment = commentForm.comment.value;
+        axios.post('/add_comment', {
+            post_id: postId,
+            comment: comment
+        }).then(function (response) {
+            console.log(response.data.message);
+        }).catch(function (error) {
+            console.log(error);
+        });
+    }
+    </script>
 {% endblock %}

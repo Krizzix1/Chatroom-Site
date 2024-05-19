@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from models import *
 
 from pathlib import Path
+import re
 
 # creates the database directory
 Path("database") \
@@ -36,6 +37,11 @@ def get_posts():
     with Session(engine) as session:
         posts = session.query(Post).order_by(desc(Post.id)).all()
         return [{'id': post.id, 'user': post.user, 'message': post.message, 'title': post.title, 'permissions': post.permissions, 'comments': post.comments} for post in posts]
+def delete_post(post_id: str):
+    with Session(engine) as session:
+        post = session.query(Post).filter_by(id=post_id).first()
+        session.delete(post)
+        session.commit()
 def get_permissions(username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()
@@ -47,6 +53,21 @@ def delete_comment(post_id: str, comment_id: str, request_username: str):
             updated_comments = '⌚'.join(cmt for cmt in post.comments.split('⌚') if cmt != comment_id)
             post.comments = updated_comments if updated_comments else ''
             print(post.comments)
+        session.commit()
+def add_comment(post_id: str, comment: str):
+    with Session(engine) as session:
+        post = session.query(Post).filter_by(id=post_id).first()
+        if post.comments:
+            post.comments += ' ⌚' + comment
+        else:
+            post.comments = comment
+        session.commit()
+def update_post(post_id: str, title: str, message: str):
+    with Session(engine) as session:
+        post = session.query(Post).filter_by(id=post_id).first()
+        real_title = re.split(r'#.*\|', title)[0]
+        post.title = real_title
+        post.message = message
         session.commit()
 def get_friend_list(username: str):
     with Session(engine) as session:
