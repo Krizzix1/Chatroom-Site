@@ -5,6 +5,14 @@
     body {
         font-family: Arial, sans-serif;
     }
+    body.light {
+        background-color: white;
+        color: black;
+    }
+    body.dark {
+        background-color: black;
+        color: white;
+    }
     .post {
         border: 1px solid #ccc;
         margin-bottom: 20px;
@@ -186,6 +194,12 @@
 </div>
 {% endfor %}
 <script>
+const body = document.body;
+const lightTheme = localStorage.getItem('theme')
+    if (lightTheme){
+        body.className = lightTheme;
+    }
+
     let receiverPermissions = document.getElementsByClassName('receiver-permission');
     for(let i = 0; i < receiverPermissions.length; i++) {
         let permission = receiverPermissions[i].getAttribute('data-permission');

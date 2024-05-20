@@ -62,7 +62,17 @@
         background-color: #ddd;
         color: black;
     }
+    body.light {
+        background-color: white;
+        color: black;
+    }
+    body.dark {
+        background-color: black;
+        color: white;
+    }
 </style>
+<button id="toggleDark">Dark Mode</button>
+
 <nav class="navbar">
     <ul class="navbar-list">
         <li class="navbar-item"><a class="navbar-link" href={{ url_for('forum') }}>Forum</a></li>
@@ -127,6 +137,27 @@
     let room_id = 0;
     let created_rooms = {};
     let sym_key = "";
+    const darkButton = document.getElementById('toggleDark');
+    const body = document.body
+
+    const lightTheme = localStorage.getItem('theme');
+    if (lightTheme){
+        body.className = lightTheme;
+    }
+
+    darkButton.addEventListener('click', () => {
+    if (body.classList.contains('light')){
+        body.classList.remove('light');
+        body.classList.add('dark');
+        localStorage.setItem("theme", "dark")
+    } else{
+        body.classList.remove('dark');
+        body.classList.add('light');
+        localStorage.setItem("theme", "light")
+    }
+
+    });
+    
 
     // when the user presses the "Enter" key inside of the "message box", 
     // the message is sent to the server
@@ -191,6 +222,7 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
             add_message(username + ": " + decryptedMsg, color);
         }, 10);
     })
+
 
 
 
@@ -331,6 +363,10 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
     // called when an incoming message has reached a client
     function add_message(message, color) {
         let box = $("#message_box");
+        const lightTheme = localStorage.getItem('theme');
+        if(color == "black" && lightTheme == 'dark'){
+            color = 'white';
+        }
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
     }
