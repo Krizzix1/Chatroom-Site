@@ -10,11 +10,11 @@
         color: black;
     }
     body.dark {
-        background-color: rgb(32, 32, 32);
-        color: rgb(224, 224, 224);
+        background-color: black;
+        color: white;
     }
     .post {
-
+        border: 1px solid #ccc;
         margin-bottom: 20px;
         padding: 20px;
         border-radius: 5px;
@@ -23,38 +23,21 @@
         margin: 20px auto; 
         position: relative;
     }
-
-    body.light .post{
-        border: 1px solid black;
-    }
-
-    body.dark .post{
-        border: 1px solid white;
-    }
-
-    body.light .post h2 {
+    .post h2 {
         margin-top: 0;
         color: #333;
     }
-    body.dark .post h2 {
-        margin-top: 0;
-        color: rgb(165, 165, 165);
-    }
-
-    body.light .post p {
+    .post p {
         color: #666;
     }
-    body.dark .post p {
-        color: rgb(155, 155, 155);
-    }
-    .post p:first-child {
+    .postchild {
         font-weight: bold;
     }
     .post-details {
         font-size: 0.8em;
         color: #999;
     }
-    {# .badge {
+    .badge {
         display: inline-block;
         padding: .25em .4em;
         font-size: 75%;
@@ -74,7 +57,7 @@
     .badge-green {
         background-color: green;
         color: white;
-    } #}
+    }
     .arrow-down {
         cursor: pointer;
         text-align: center;
@@ -122,14 +105,15 @@
     }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<h1 style="text-align: center;">Forum</h1>
+<h1 style="text-align: center; color: #333;">Forum</h1>
 {% for post in posts %}
-</div>
+
+
 <div class="post" onclick="toggleComments({{ post['id'] }})">
     <h2 id="title-{{ post['id'] }}">{{ post['title'] }} <span class="post-details">#{{ post['id'] }} | {{ post['user'] }}  <span class="receiver-permission" data-permission="{{ post['permissions'] }}">{{ post['permissions'] }}</span></span></h2>
     <p id="message-{{ post['id'] }}">{{ post['message'] }}</p>
     <div class="arrow-down" onclick="event.stopPropagation(); toggleComments({{ post['id'] }})">
-        <p style="font-size: 0.8em; color: #999;">Click to expand</p>
+        <p style="font-size: 0.8em; color: #999;">&#8595;</p>
     </div>
     {% if permissions == 'staff' %}
         <button class="delete-button" onclick="event.stopPropagation(); deletePost({{ post['id'] }})">X</button>
@@ -193,6 +177,10 @@
         color: #f8f9fa;
     }
 
+    body.dark #newpost input[type="submit"] {
+        background-color: #f8f9fa;
+        color: #333;
+    }
 </style>
 
 <div id="newpost">
