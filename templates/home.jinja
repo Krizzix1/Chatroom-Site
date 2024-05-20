@@ -138,9 +138,43 @@
         
         background: linear-gradient(180deg,#797979,#383838);
     }
+    .badge {
+        display: inline-block;
+        padding: .25em .4em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: .75rem; 
+        color: #fff;
+    }
+    .badge-online {
+        background-color: green;
+        color: white;
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        display: inline-block;
+    }
 
-
-    
+    .badge-offline {
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        display: inline-block;
+    }
+    .badge-purple {
+        background-color: purple;
+        color: white;
+    }
+    .badge-green {
+        background-color: green;
+        color: white;
+    } 
 </style>
 <input type="checkbox" class="toggle"id="toggleDark"/>
 <label for="toggleDark"></label>
@@ -472,11 +506,16 @@ socket.on("incomingEncrypted", (msg,username,hmac, color="black") => {
                     console.log('Processing friend:', friend); 
                     const li = $("<li>");
                     console.log('onelineFriends[friend]:', onlineFriends[friend]);
-                    const status = onlineFriends[friend];
-                    const link = $("<a>").text(friend + " (" + status + ")");
+                    let status = onlineFriends[friend];
+                    if (status !== "online") {
+                        status = "offline";
+                    }
+                    const link = $("<a>").text(friend+ " ");
                     link.click(() => join_room(friend));
                     li.append(link);
-
+                    const badge = $("<span>");
+                    badge.addClass(status === "online" ? "badge-online" : "badge-offline");
+                    li.append(badge);
                     const removeButton = $("<button>").text("Remove");
                     removeButton.click(() => removeFriend(friend));
                     li.append(removeButton);
