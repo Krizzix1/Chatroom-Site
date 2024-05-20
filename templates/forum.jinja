@@ -10,7 +10,7 @@
         color: black;
     }
     body.dark {
-        background-color: black;
+        background-color: rgb(32, 32, 32);
         color: white;
     }
     .post {
@@ -23,19 +23,30 @@
         margin: 20px auto; 
         position: relative;
     }
-    .post h2 {
+    body.dark .post h2 {
         margin-top: 0;
-        color: #333;
+        color: #ececec;
     }
-    .post p {
-        color: #666;
+    body.light .post h2{
+        margin-top: 0;
+        color: #525252; 
     }
+    body.dark .post p {
+        color: #c4c4c4;
+        mix-blend-mode: difference;
+    }
+
+    body.light .post p {
+        color: #303030;
+    }
+
+    
     .postchild {
         font-weight: bold;
     }
     .post-details {
         font-size: 0.8em;
-        color: #999;
+        color: #858585;
     }
     .badge {
         display: inline-block;
@@ -66,9 +77,18 @@
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 5px;
-        background-color: #f9f9f9;
+        
         margin-top: 10px;
     }
+
+    body.dark .comments {
+        background-color: #e4e4e4;
+    }
+
+    body.light .comments{
+        background-color: #e4e4e4;
+    }
+
     .comments-header {
         font-weight: bold;
         color: #333;
@@ -105,7 +125,7 @@
     }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<h1 style="text-align: center; color: #333;">Forum</h1>
+<h1 style="text-align: center;">Forum</h1>
 {% for post in posts %}
 
 
@@ -177,10 +197,6 @@
         color: #f8f9fa;
     }
 
-    body.dark #newpost input[type="submit"] {
-        background-color: #f8f9fa;
-        color: #333;
-    }
 </style>
 
 <div id="newpost">
