@@ -56,7 +56,9 @@
 
     .navbar {
         background-color: #333;
+        border-radius: 50px;
         overflow: auto;
+
     }
 
     .navbar-list {
@@ -65,8 +67,10 @@
         padding: 0;
     }
 
+
     .navbar-item {
         float: left;
+
     }
 
     .navbar-link {
@@ -78,22 +82,68 @@
     }
 
     .navbar-link:hover {
-        background-color: #ddd;
+        background-color: rgb(224, 224, 224);
         color: black;
     }
     body.light {
+        transition:0.3s;
         background-color: white;
-        color: black;
+        color: rgb(32, 32, 32);
     }
     body.dark {
-        background-color: black;
-        color: white;
+        transition:0.3s;
+        background-color: rgb(32, 32, 32);
+        color: rgb(224, 224, 224);
+    }
+    label {
+        top: 42px;
+        left:1800px;
+        width: 75px;
+        height: 35px;
+        position: relative;
+        display: block;
+        background: white;
+        border-radius: 50px;
+        box-shadow: inset 0px 2px 12px rgba(0,0,0,0.4), inset 0px -5px 15px rgba(255,255,255,0.4);
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    input.toggle{
+        width: 0;
+        height: 0;
+        visibility: hidden;
+    }
+
+    label:after{
+        content: "";
+        width: 32px;
+        height: 32px;
+        position: absolute;
+        top:2px;
+        left:3px;
+        background: linear-gradient(180deg, #fcc884,#d1820c);
+        border-radius: 50px;
+        box-shadow: 0px 5px 10px rgba(0,0,0,0.3);
+        transition: 0.3s;
+
+    }
+
+    input.toggle:checked + label {
+        background: #242424;
+    }
+
+    input.toggle:checked + label:after{
+        left:71px;
+        transform: translateX(-100%);
+        
+        background: linear-gradient(180deg,#797979,#383838);
     }
 
 
     
 </style>
-<button id="toggleDark">Dark Mode</button>
+<input type="checkbox" class="toggle"id="toggleDark"/>
+<label for="toggleDark"></label>
 
 <nav class="navbar">
     <ul class="navbar-list">
@@ -160,11 +210,15 @@
     let created_rooms = {};
     let sym_key = "";
     const darkButton = document.getElementById('toggleDark');
-    const body = document.body
+    const body = document.body;
 
     const lightTheme = localStorage.getItem('theme');
+
     if (lightTheme){
         body.className = lightTheme;
+        if(lightTheme == "dark"){
+            darkButton.checked = true;
+        }
     }
 
     darkButton.addEventListener('click', () => {
