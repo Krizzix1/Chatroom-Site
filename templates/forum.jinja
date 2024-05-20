@@ -14,7 +14,7 @@
         color: white;
     }
     .post {
-        border: 1px solid #ccc;
+
         margin-bottom: 20px;
         padding: 20px;
         border-radius: 5px;
@@ -23,12 +23,29 @@
         margin: 20px auto; 
         position: relative;
     }
-    .post h2 {
+
+    body.light .post{
+        border: 1px solid black;
+    }
+
+    body.dark .post{
+        border: 1px solid white;
+    }
+
+    body.light .post h2 {
         margin-top: 0;
         color: #333;
     }
-    .post p {
+    body.dark .post h2 {
+        margin-top: 0;
+        color: rgb(165, 165, 165);
+    }
+
+    body.light .post p {
         color: #666;
+    }
+    body.dark .post p {
+        color: rgb(155, 155, 155);
     }
     .post p:first-child {
         font-weight: bold;
@@ -105,7 +122,7 @@
     }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<h1 style="text-align: center; color: #333;">Forum</h1>
+<h1 style="text-align: center;">Forum</h1>
 {% for post in posts %}
 
 {# <div class="post" onclick="toggleComments({{ post['id'] }})">
@@ -178,6 +195,11 @@
         padding: 10px;
         cursor: pointer;
     }
+    body.dark #newpost {
+        background-color: #333;
+        color: #f8f9fa;
+    }
+
 </style>
 
 <div id="newpost">
