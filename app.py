@@ -45,6 +45,7 @@ def forum():
     print(f"username: {username}")
     permissions = db.get_permissions(username)
     return render_template("forum.jinja", posts=posts, username=username, permissions=permissions)
+
 @app.route('/delete_comment', methods=['POST'])
 def delete_comment():
     data = request.get_json()

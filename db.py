@@ -109,15 +109,18 @@ def add_friend(username: str, friend_username: str):
             user.friends = (user.friends + '?' + friend_username) if user.friends else friend_username
         session.commit()
 
-def remove_friend_request(username: str, friend_username: str):
+def remove_friend(username: str, friend_username: str):
     with Session(engine) as session:
         user = session.query(User).filter_by(username=username).first()
         friend_user = session.query(User).filter_by(username=friend_username).first()
-        if friend_username in user.incoming.split('?'):
-            updated_requests = '?'.join(fr for fr in user.incoming.split('?') if fr != friend_username)
-            user.incoming = updated_requests if updated_requests else ''
-            updated_requests = '?'.join(fr for fr in friend_user.outgoing.split('?') if fr != username)
-            friend_user.outgoing = updated_requests if updated_requests else ''
+        if not user or not friend_user:
+            return "User or friend not found"
+        if friend_username in user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in user.friends.split('?') if fr != friend_username)
+            user.friends = updated_friends if updated_friends else ''
+        if username in friend_user.friends.split('?'):
+            updated_friends = '?'.join(fr for fr in friend_user.friends.split('?') if fr != username)
+            friend_user.friends = updated_friends if updated_friends else ''
         session.commit()
 
 def approve_friend_request(username: str, friend_username: str):

@@ -23,21 +23,21 @@
         margin: 20px auto; 
         position: relative;
     }
-    .post h2 {
+    .post2 {
         margin-top: 0;
         color: #333;
     }
-    .post p {
+    .post3 {
         color: #666;
     }
-    .post p:first-child {
+    .post child {
         font-weight: bold;
     }
     .post-details {
         font-size: 0.8em;
         color: #999;
     }
-    .badge {
+    {# .badge {
         display: inline-block;
         padding: .25em .4em;
         font-size: 75%;
@@ -57,7 +57,7 @@
     .badge-green {
         background-color: green;
         color: white;
-    }
+    } #}
     .arrow-down {
         cursor: pointer;
         text-align: center;
@@ -107,18 +107,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <h1 style="text-align: center; color: #333;">Forum</h1>
 {% for post in posts %}
-
-{# <div class="post" onclick="toggleComments({{ post['id'] }})">
-    {% if permissions == 'staff' %}
-        <button style="float: left; margin-right: 10px;" onclick="event.stopPropagation(); deletePost({{ post['id'] }})">Delete Post</button>
-    {% endif %}
-</div> #}
+</div>
 <div class="post" onclick="toggleComments({{ post['id'] }})">
     <h2 id="title-{{ post['id'] }}">{{ post['title'] }} <span class="post-details">#{{ post['id'] }} | {{ post['user'] }}  <span class="receiver-permission" data-permission="{{ post['permissions'] }}">{{ post['permissions'] }}</span></span></h2>
     <p id="message-{{ post['id'] }}">{{ post['message'] }}</p>
     <div class="arrow-down" onclick="event.stopPropagation(); toggleComments({{ post['id'] }})">
         <p style="font-size: 0.8em; color: #999;">Click to expand</p>
-        {# <p style="font-size: 0.8em; color: #999;">&#8595;</p> #}
     </div>
     {% if permissions == 'staff' %}
         <button class="delete-button" onclick="event.stopPropagation(); deletePost({{ post['id'] }})">X</button>
@@ -134,11 +128,10 @@
     
     {% for comment in messages %}
         <p>{{ comment }}
-        {% if permissions == 'staff' or username == post['user'] %}
+        {% if permissions == 'staff' %}
             <button onclick="deleteComment({{ post['id'] }}, '{{ comment }}')">Delete</button>
         {% endif %}
-        </p>
-        
+        </p>        
     {% endfor %}
     <form id="commentfrompost{{ post['id'] }}" onclick="event.stopPropagation();" onsubmit="event.preventDefault(); addComment({{ post['id'] }});">
         <textarea name="comment" placeholder="Add a comment..."></textarea>
@@ -177,6 +170,15 @@
         border: none;
         padding: 10px;
         cursor: pointer;
+    }
+    body.dark #newpost {
+        background-color: #333;
+        color: #f8f9fa;
+    }
+
+    body.dark #newpost input[type="submit"] {
+        background-color: #f8f9fa;
+        color: #333;
     }
 </style>
 
